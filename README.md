@@ -1,12 +1,5 @@
 # ĐỒ ÁN MÔN HỌC: BLOCKCHAIN VÀ ỨNG DỤNG
 ## ĐỀ TÀI 4: HÓA ĐƠN ĐIỆN TỬ CHỐNG GIAN LẬN THUẾ
-**Trường:** Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh (HUFLIT)  
-**Khoa:** Công nghệ Thông tin  
-**Giảng viên hướng dẫn:** TS. Trần Minh Thái  
-**Sinh viên thực hiện:**
-- [Sinh viên 1 - Trưởng nhóm] — MSSV: `23DH00001`
-- [Sinh viên 2 - Thành viên]   — MSSV: `23DH00002`
-- [Sinh viên 3 - Thành viên]   — MSSV: `23DH00003`
 
 ---
 
