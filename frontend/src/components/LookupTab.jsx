@@ -94,8 +94,31 @@ export default function LookupTab({ initialCode }) {
           </button>
         </form>
 
+        {/* Skeleton loading khi đang truy vấn */}
+        {loading && (
+          <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm animate-pulse space-y-4">
+            <div className="text-center space-y-2 border-b border-zinc-200 pb-4">
+              <div className="h-6 w-64 bg-zinc-200 rounded mx-auto" />
+              <div className="h-4 w-80 bg-zinc-100 rounded mx-auto" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="h-4 w-28 bg-zinc-200 rounded" />
+                <div className="h-3 w-40 bg-zinc-100 rounded" />
+                <div className="h-3 w-36 bg-zinc-100 rounded" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-28 bg-zinc-200 rounded" />
+                <div className="h-3 w-40 bg-zinc-100 rounded" />
+                <div className="h-3 w-36 bg-zinc-100 rounded" />
+              </div>
+            </div>
+            <div className="h-16 w-full bg-zinc-100 rounded" />
+          </div>
+        )}
+
         {/* Chưa tìm kiếm */}
-        {!invoiceData && !notFound && (
+        {!loading && !invoiceData && !notFound && (
           <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-md text-center text-xs text-zinc-500">
             Vui lòng nhập mã hóa đơn và bấm <strong>Tra Cứu</strong> để xuất Phiếu Hóa Đơn Điện Tử Giá Trị Gia Tăng có Dấu Ký Số Blockchain.
           </div>

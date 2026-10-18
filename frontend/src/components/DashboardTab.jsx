@@ -2,7 +2,7 @@ import React from 'react';
 import { shortenAddress } from '../utils/contract';
 import { CheckCircle2, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react';
 
-export default function DashboardTab({ recentInvoices, onSelectTab, onQuickLookup, onRefresh }) {
+export default function DashboardTab({ recentInvoices, loading, onSelectTab, onQuickLookup, onRefresh }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Cơ chế chống gian lận thuế */}
@@ -83,15 +83,29 @@ export default function DashboardTab({ recentInvoices, onSelectTab, onQuickLooku
           </div>
           <button 
             onClick={onRefresh}
-            className="p-1 rounded text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100"
+            disabled={loading}
+            className="p-1 rounded text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 disabled:opacity-50"
             title="Làm mới dữ liệu"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
 
         <div className="divide-y divide-zinc-100 flex-1">
-          {recentInvoices.length === 0 ? (
+          {loading ? (
+            [1, 2, 3].map((n) => (
+              <div key={n} className="p-4 flex justify-between items-center animate-pulse">
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-zinc-200 rounded" />
+                  <div className="h-3 w-48 bg-zinc-100 rounded" />
+                </div>
+                <div className="space-y-2 flex flex-col items-end">
+                  <div className="h-4 w-24 bg-zinc-200 rounded" />
+                  <div className="h-3 w-12 bg-zinc-100 rounded" />
+                </div>
+              </div>
+            ))
+          ) : recentInvoices.length === 0 ? (
             <div className="p-8 text-center text-xs text-zinc-400">
               Chưa có hóa đơn nào được ghi nhận trên sổ cái.
             </div>

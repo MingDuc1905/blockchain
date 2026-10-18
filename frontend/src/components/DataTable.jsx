@@ -3,7 +3,7 @@ import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
 import { Search, RefreshCw, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export default function DataTable({ invoices, onRefresh, onSelectInvoice }) {
+export default function DataTable({ invoices, loading, onRefresh, onSelectInvoice }) {
   const { showToast } = useWeb3();
   const [filterQuery, setFilterQuery] = useState('');
 
@@ -28,10 +28,11 @@ export default function DataTable({ invoices, onRefresh, onSelectInvoice }) {
         </div>
         <button 
           onClick={onRefresh}
-          className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors cursor-pointer"
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-50 transition-colors cursor-pointer"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Đồng Bộ Sổ Cái</span>
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <span>{loading ? 'Đang Đọc Khối...' : 'Đồng Bộ Sổ Cái'}</span>
         </button>
       </div>
 
@@ -48,7 +49,7 @@ export default function DataTable({ invoices, onRefresh, onSelectInvoice }) {
           />
         </div>
         <span className="text-xs text-zinc-500 font-mono">
-          Hiển thị {filtered.length} / {invoices.length} hóa đơn
+          {loading ? 'Đang đồng bộ...' : `Hiển thị ${filtered.length} / ${invoices.length} hóa đơn`}
         </span>
       </div>
 
@@ -67,7 +68,20 @@ export default function DataTable({ invoices, onRefresh, onSelectInvoice }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200">
-            {filtered.length === 0 ? (
+            {loading ? (
+              // Anti-AI Slop: Hiển thị Skeleton Shimmer Rows
+              [1, 2, 3, 4, 5].map((n) => (
+                <tr key={n} className="animate-pulse">
+                  <td className="py-4 px-4 text-center"><div className="h-4 w-6 bg-zinc-200 rounded mx-auto" /></td>
+                  <td className="py-4 px-4"><div className="h-4 w-28 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4"><div className="h-4 w-32 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4"><div className="h-4 w-32 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4"><div className="h-4 w-24 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4"><div className="h-4 w-28 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4 text-center"><div className="h-6 w-16 bg-zinc-200 rounded mx-auto" /></td>
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan="7" className="py-8 text-center text-zinc-400">
                   Không tìm thấy hóa đơn nào khớp với từ khóa tìm kiếm.

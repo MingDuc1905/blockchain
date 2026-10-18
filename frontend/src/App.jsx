@@ -9,15 +9,18 @@ import LookupTab from './components/LookupTab';
 import DataTable from './components/DataTable';
 
 function DashboardApp() {
-  const { readContract, toast } = useWeb3();
+  const { readContract, latestBlock, fetchBlockNumber, toast } = useWeb3();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [invoices, setInvoices] = useState([]);
+  const [loadingLedger, setLoadingLedger] = useState(false);
   const [lookupInitialCode, setLookupInitialCode] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
 
   const loadLedger = async () => {
     if (!readContract) return;
+    setLoadingLedger(true);
     try {
+      fetchBlockNumber();
       const list = await readContract.layDanhSachMaHoaDon();
       const loaded = [];
       for (let i = list.length - 1; i >= 0; i--) {
@@ -40,8 +43,12 @@ function DashboardApp() {
       setInvoices(loaded);
     } catch (err) {
       console.error('Lỗi nạp sổ cái:', err);
+    } finally {
+      setLoadingLedger(false);
     }
   };
+
+  const totalRevenue = invoices.reduce((acc, cur) => acc + (cur.giaTri || 0), 0);
 
   useEffect(() => {
     if (readContract) {
@@ -100,13 +107,18 @@ function DashboardApp() {
           </div>
 
           {/* SectionCards (4 KPI Cards chuẩn Shadcn v4) */}
-          <SectionCards totalInvoices={invoices.length} />
+          <SectionCards 
+            totalInvoices={invoices.length} 
+            latestBlock={latestBlock}
+            totalRevenue={totalRevenue}
+          />
 
           {/* Dynamic Content Views */}
           <div className="mt-6">
             {activeTab === 'dashboard' && (
               <DashboardTab 
                 recentInvoices={invoices} 
+                loading={loadingLedger}
                 onSelectTab={setActiveTab} 
                 onQuickLookup={handleSelectInvoiceForLookup}
                 onRefresh={loadLedger}
@@ -124,6 +136,7 @@ function DashboardApp() {
             {activeTab === 'ledger' && (
               <DataTable 
                 invoices={invoices} 
+                loading={loadingLedger}
                 onRefresh={loadLedger} 
                 onSelectInvoice={handleSelectInvoiceForLookup}
               />

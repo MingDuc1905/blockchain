@@ -12,6 +12,17 @@ export function Web3Provider({ children }) {
   const [readContract, setReadContract] = useState(null);
   const [writeContract, setWriteContract] = useState(null);
   const [toast, setToast] = useState(null);
+  const [latestBlock, setLatestBlock] = useState(null);
+
+  const fetchBlockNumber = async () => {
+    try {
+      const provider = new ethers.JsonRpcProvider(CONTRACT_CONFIG.rpcUrl);
+      const blk = await provider.getBlockNumber();
+      setLatestBlock(blk);
+    } catch (e) {
+      console.warn("Không lấy được block number:", e);
+    }
+  };
 
   // Khởi tạo Provider đọc dữ liệu ban đầu
   useEffect(() => {
@@ -19,6 +30,7 @@ export function Web3Provider({ children }) {
       const publicProvider = new ethers.JsonRpcProvider(CONTRACT_CONFIG.rpcUrl);
       const contract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, publicProvider);
       setReadContract(contract);
+      fetchBlockNumber();
     } catch (err) {
       console.warn("Không kết nối được Public RPC:", err);
     }
@@ -128,6 +140,8 @@ export function Web3Provider({ children }) {
       networkOk,
       readContract,
       writeContract,
+      latestBlock,
+      fetchBlockNumber,
       connectWallet,
       disconnectWallet,
       refreshBalance,
