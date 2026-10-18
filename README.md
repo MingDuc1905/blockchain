@@ -20,23 +20,18 @@
 
 ---
 
-## 📁 Cấu Trúc Thư Mục Đồ Án (Chuẩn Workspace)
+## 📁 Cấu Trúc Thư Mục Đồ Án
 ```text
 d:\block chain\
 ├── contracts/
 │   └── HoaDonDienTu.sol                 # Smart Contract Solidity ^0.8.20
 ├── scripts/
-│   ├── demo_hoadon.py                   # Script Python mô phỏng kiểm thử 5 HĐ hợp lệ + 1 HĐ bị revert
-│   └── deploy_sepolia.py                # Hướng dẫn & script triển khai Sepolia Testnet
+│   ├── demo_hoadon.py                   # Script Python kiểm thử 5 HĐ hợp lệ + 1 HĐ bị revert
+│   ├── Demo_HoaDon_DienTu.ipynb         # Jupyter Notebook mô phỏng có sẵn kết quả
+│   └── deploy_sepolia.py                # Script triển khai mạng Sepolia Testnet
 ├── docs/
-│   ├── Bao_Cao_Do_An_De_Tai_04.docx     # Báo cáo đồ án 5 chương hoàn thiện (chuẩn 100% mẫu của trường)
-│   ├── Mau bao cao Project.docx         # File mẫu gốc của Khoa CNTT - HUFLIT
-│   ├── Danh sach de tai 2026-2027.pdf   # Đề bài 30 đề tài môn học
-│   ├── Huong dan trinh bay bao cao.pdf  # Quy chuẩn trình bày luận văn / đồ án
+│   ├── images/                          # Sơ đồ kiến trúc & tuần tự đen trắng 300 DPI
 │   └── Yeu_Cau_Bao_Cao_Giua_Ky.txt      # Barem yêu cầu báo cáo tiến độ giữa kỳ
-├── slides/
-│   ├── 04_Bao_Cao_Tien_Do_Giua_Ky.pptx  # Slide PowerPoint 10 slide báo cáo giữa kỳ (chuẩn barem)
-│   └── Template_Goc/                    # Thư mục lưu trữ các template gốc tham khảo
 ├── AGENTS.md                            # Quy chuẩn vận hành môn học Blockchain
 └── README.md                            # Tài liệu này
 ```
@@ -55,19 +50,3 @@ python scripts/demo_hoadon.py
   [BẰNG CHỨNG BẢO VỆ THÀNH CÔNG - TRANSACTION REVERTED]:
   Log Error: "LOI: Ma hoa don 'HD-2026-001' da ton tai tren he thong!"
   ```
-
----
-
-## 🌐 Hướng Dẫn Triển Khai Lên Mạng Ethereum Sepolia Testnet
-Xem chi tiết trong file [scripts/deploy_sepolia.py](file:///d:/block%20chain/scripts/deploy_sepolia.py) hoặc thực hiện nhanh qua **Remix IDE**:
-1. Mở trình duyệt truy cập: [Remix Ethereum IDE](https://remix.ethereum.org/).
-2. Tạo file `HoaDonDienTu.sol` trong Remix và dán nội dung từ [contracts/HoaDonDienTu.sol](file:///d:/block%20chain/contracts/HoaDonDienTu.sol).
-3. Biên dịch với Solidity Compiler `0.8.20`.
-4. Kết nối ví MetaMask (mạng Sepolia) và bấm **Deploy**.
-5. Nhận địa chỉ Contract Address và tra cứu trực tiếp trên [Sepolia Etherscan](https://sepolia.etherscan.io/).
-
----
-
-## 📑 Báo Cáo & Slide Thuyết Trình
-- **File Báo Cáo Word:** [docs/Bao_Cao_Do_An_De_Tai_04.docx](file:///d:/block%20chain/docs/Bao_Cao_Do_An_De_Tai_04.docx) được biên soạn nghiêm túc, đầy đủ 5 chương học thuật, giữ nguyên 100% định dạng Times New Roman 13 pt, giãn dòng 1.5 của mẫu trường.
-- **File Slide PowerPoint:** [slides/04_Bao_Cao_Tien_Do_Giua_Ky.pptx](file:///d:/block%20chain/slides/04_Bao_Cao_Tien_Do_Giua_Ky.pptx) với đúng 10 slide theo barem yêu cầu (Tiến độ báo cáo đồ án, Tiến độ demo ứng dụng, Bảng phân công thành viên).
