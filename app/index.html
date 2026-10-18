@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cổng Thông Tin Hóa Đơn Điện Tử Blockchain | HUFLIT</title>
+  <title>Hệ Thống Hóa Đơn Điện Tử Chống Gian Lận Thuế | HUFLIT Blockchain</title>
   
-  <!-- Typography: Inter, Plus Jakarta Sans, JetBrains Mono -->
+  <!-- Typography: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
   
@@ -17,172 +17,245 @@
 </head>
 <body>
 
-  <div class="app-container">
-    <!-- Header Cổng Thông Tin Thuế & Hóa Đơn Điện Tử -->
-    <header class="app-header">
-      <div class="brand-section">
-        <div class="brand-emblem">
-          <!-- Scale & Shield Official SVG -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 1. SHADCN TOP NAVIGATION (56px) -->
+  <header class="shadcn-nav">
+    <div class="nav-left">
+      <a href="#" class="brand-link" onclick="switchTab('dashboard'); return false;">
+        <div class="brand-icon">
+          <!-- Shield SVG -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="m9 12 2 2 4-4"></path>
           </svg>
         </div>
-        <div class="brand-title">
-          <h1>
-            CỔNG HÓA ĐƠN ĐIỆN TỬ BLOCKCHAIN
-            <span class="gov-badge">EVM Sepolia</span>
-          </h1>
-          <p>HUFLIT • Khoa Công Nghệ Thông Tin • Đề tài 4: Hóa đơn điện tử chống gian lận thuế</p>
-        </div>
+        <span>HUFLIT TaxChain</span>
+      </a>
+
+      <!-- Navigation links (Tabs) -->
+      <nav class="nav-links">
+        <button class="nav-tab-btn active" id="nav-btn-dashboard" onclick="switchTab('dashboard')">Tổng Quan</button>
+        <button class="nav-tab-btn" id="nav-btn-issue" onclick="switchTab('issue')">Phát Hành Hóa Đơn</button>
+        <button class="nav-tab-btn" id="nav-btn-lookup" onclick="switchTab('lookup')">Tra Cứu & Đối Soát</button>
+        <button class="nav-tab-btn" id="nav-btn-ledger" onclick="switchTab('ledger')">Sổ Cái On-Chain</button>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <div class="badge-network">
+        <span class="dot-indicator"></span>
+        <span id="networkName">Sepolia (11155111)</span>
       </div>
 
-      <div class="header-actions">
-        <div class="network-indicator" id="networkBadge">
-          <span class="live-dot"></span>
-          <span id="networkName">Sepolia (11155111)</span>
-        </div>
-        <button class="btn btn-navy" id="btnConnectWallet">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
-            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
-            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
-          </svg>
-          <span id="walletBtnText">Liên Kết Ví MetaMask</span>
+      <button class="btn btn-primary btn-sm" id="btnConnectWallet">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+        </svg>
+        <span id="walletBtnText">Kết Nối MetaMask</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. MAIN PAGE CONTAINER -->
+  <main class="page-container">
+    <!-- Header Title & Subtext -->
+    <div class="page-header">
+      <div>
+        <h1 id="pageTitleText">Bảng Điều Khiển Hóa Đơn Điện Tử</h1>
+        <p>Hệ thống chống gian lận và xuất khống hóa đơn trên mạng phân tán Ethereum Sepolia</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-outline btn-sm" onclick="quickLookupPrompt()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Tra Cứu Nhanh
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('issue')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Lập Hóa Đơn Mới
         </button>
       </div>
-    </header>
+    </div>
 
-    <!-- Dãy Thẻ Chỉ Số KPI (Metrics Grid) -->
-    <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
+    <!-- Shadcn Tabs List Filter -->
+    <div class="tabs-list">
+      <button class="tab-trigger active" id="tab-trigger-dashboard" onclick="switchTab('dashboard')">Tổng Quan</button>
+      <button class="tab-trigger" id="tab-trigger-issue" onclick="switchTab('issue')">Phát Hành Hóa Đơn</button>
+      <button class="tab-trigger" id="tab-trigger-lookup" onclick="switchTab('lookup')">Tra Cứu & Xác Thực</button>
+      <button class="tab-trigger" id="tab-trigger-ledger" onclick="switchTab('ledger')">Sổ Cái Toàn Bộ</button>
+    </div>
+
+    <!-- 4 SHADCN METRIC STATS CARDS -->
+    <section class="metrics-grid">
+      <div class="card metric-card">
+        <div class="metric-card-header">
+          <span class="metric-title">Tổng Hóa Đơn On-Chain</span>
+          <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
         </div>
-        <div class="stat-info">
-          <div class="stat-label">Hóa Đơn Đã Đóng Khối</div>
-          <div class="stat-value" id="statTotalInvoices">0 Hóa đơn</div>
-        </div>
+        <div class="metric-value" id="statTotalInvoices">0</div>
+        <div class="metric-subtext">Đã ghi nhận vĩnh viễn vào khối</div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon navy">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-            <rect x="9" y="9" width="6" height="6"></rect>
-            <line x1="9" y1="1" x2="9" y2="4"></line>
-            <line x1="15" y1="1" x2="15" y2="4"></line>
-            <line x1="9" y1="20" x2="9" y2="23"></line>
-            <line x1="15" y1="20" x2="15" y2="23"></line>
-          </svg>
+      <div class="card metric-card">
+        <div class="metric-card-header">
+          <span class="metric-title">Hợp Đồng Thông Minh</span>
+          <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
         </div>
-        <div class="stat-info">
-          <div class="stat-label">Hợp Đồng Thông Minh (Sepolia)</div>
-          <div class="stat-value font-mono" style="font-size: 0.92rem;">
-            <a href="https://sepolia.etherscan.io/address/0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3" target="_blank" class="addr-link">0x358A...5eE3 ↗</a>
-            <button class="copy-btn" onclick="copyText('0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3', 'Địa chỉ hợp đồng')" title="Sao chép">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
+        <div class="metric-value" style="font-size: 1.15rem; font-family: var(--font-mono);">
+          <a href="https://sepolia.etherscan.io/address/0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3" target="_blank" class="addr-link">0x358A...5eE3 ↗</a>
+          <button class="copy-btn" onclick="copyText('0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3', 'Địa chỉ hợp đồng')" title="Sao chép">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+        </div>
+        <div class="metric-subtext">Sepolia Testnet EVM</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-card-header">
+          <span class="metric-title">Tài Khoản Doanh Nghiệp</span>
+          <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="metric-value" style="font-size: 1.15rem; font-family: var(--font-mono);" id="userWalletDisplay">
+          Chưa kết nối
+        </div>
+        <div class="metric-subtext">Địa chỉ ví ký phát hành hóa đơn</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-card-header">
+          <span class="metric-title">Số Dư Gas Phí</span>
+          <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+        </div>
+        <div class="metric-value" style="font-family: var(--font-mono);" id="userBalanceDisplay">0.0000 ETH</div>
+        <div class="metric-subtext">Khả dụng cho các giao dịch on-chain</div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 1: TỔNG QUAN (DASHBOARD)
+         ====================================================================== -->
+    <section class="tab-content active" id="tab-dashboard">
+      <div class="dashboard-grid">
+        <!-- Cột Trái: Trạng thái đối soát thuế -->
+        <div class="card">
+          <div class="card-header-styled">
+            <div>
+              <h3>Cơ Chế Chống Gian Lận Thuế (Anti-Tax Fraud)</h3>
+              <p>Mô hình đối soát phi tập trung giữa Doanh nghiệp, Khách hàng và Cơ quan Thuế</p>
+            </div>
+            <span style="font-size: 0.75rem; background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Active</span>
+          </div>
+          <div class="card-body-styled">
+            <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.875rem;">
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div style="width: 28px; height: 28px; background: #f4f4f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">1</div>
+                <div>
+                  <strong>Chống Xuất Khống & Trùng Mã (Revert On-chain):</strong><br>
+                  <span style="color: var(--muted-foreground); font-size: 0.8rem;">Mỗi mã hóa đơn chỉ được phát hành duy nhất một lần. Nếu trùng lặp, EVM sẽ tự động revert và hủy giao dịch ngay lập tức.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div style="width: 28px; height: 28px; background: #f4f4f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">2</div>
+                <div>
+                  <strong>Bất Biến & Không Thể Tẩy Xóa (Immutability):</strong><br>
+                  <span style="color: var(--muted-foreground); font-size: 0.8rem;">Toàn bộ giá trị thanh toán, timestamp và ví người bán/mua được băm vào các block Sepolia, ngăn chặn việc sửa lùi ngày hoặc đổi giá trị hóa đơn.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div style="width: 28px; height: 28px; background: #f4f4f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">3</div>
+                <div>
+                  <strong>Đối Soát Công Khai Cho Cơ Quan Thuế:</strong><br>
+                  <span style="color: var(--muted-foreground); font-size: 0.8rem;">Bất kỳ ai cũng có thể tra cứu hóa đơn trực tiếp từ smart contract mà không cần thông qua cơ sở dữ liệu tập trung dễ bị xâm phạm.</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; gap: 8px;">
+              <button class="btn btn-primary btn-sm" onclick="switchTab('issue')">Bắt Đầu Phát Hành Hóa Đơn</button>
+              <button class="btn btn-outline btn-sm" onclick="switchTab('ledger')">Xem Toàn Bộ Sổ Cái</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-icon emerald">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <div class="stat-label">Ví Doanh Nghiệp Ký Số</div>
-          <div class="stat-value font-mono" style="font-size: 0.92rem;" id="userWalletDisplay">
-            Chưa liên kết
+        <!-- Cột Phải: Hóa đơn gần nhất (Recent Invoices) -->
+        <div class="card">
+          <div class="card-header-styled">
+            <div>
+              <h3>Hóa Đơn Phát Hành Gần Đây</h3>
+              <p>Danh sách các giao dịch được xác thực gần nhất trên sổ cái</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="loadBlockchainLedger()">Làm Mới</button>
           </div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon amber">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <div class="stat-label">Số Dư Gas Phí (Sepolia ETH)</div>
-          <div class="stat-value font-mono" id="userBalanceDisplay">0.0000 ETH</div>
+          <div class="card-body-styled" style="padding: 0;">
+            <div id="dashboardRecentInvoicesList" style="font-size: 0.875rem;">
+              <div style="padding: 32px; text-align: center; color: var(--muted-foreground);">
+                Đang đồng bộ dữ liệu gần đây từ mạng Sepolia...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Main Workspace (Grid 2 Cột) -->
-    <main class="main-grid">
-      <!-- Cột Trái: Kê Khai & Phát Hành Hóa Đơn Mới -->
-      <section class="card">
-        <div class="card-header">
-          <h2>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-blue)" stroke-width="2">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-            Kê Khai & Ký Phát Hành Hóa Đơn Điện Tử
-          </h2>
-          <span style="font-size: 0.72rem; font-weight: 600; color: var(--color-blue); background: var(--color-blue-subtle); padding: 3px 8px; border-radius: 4px; border: 1px solid #bfdbfe;">
-            Bảo Chứng On-Chain
+    <!-- ======================================================================
+         TAB 2: PHÁT HÀNH HÓA ĐƠN (ISSUE INVOICE)
+         ====================================================================== -->
+    <section class="tab-content" id="tab-issue">
+      <div class="card" style="max-width: 760px; margin: 0 auto;">
+        <div class="card-header-styled">
+          <div>
+            <h3>Kê Khai & Ký Số Hóa Đơn Điện Tử Mới</h3>
+            <p>Hóa đơn sẽ được đóng dấu mã băm và ghi nhận bất biến vào mạng Ethereum Sepolia</p>
+          </div>
+          <span style="font-size: 0.75rem; background: #f4f4f5; color: #18181b; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono);">
+            ERC-EVM Tx
           </span>
         </div>
 
-        <div class="card-body">
+        <div class="card-body-styled">
           <form id="formIssueInvoice" onsubmit="event.preventDefault();">
-            <div class="form-group">
+            <div class="form-item">
               <label for="inputMaHD">
-                <span>Mã Số Hóa Đơn (* Định danh duy nhất)</span>
-                <span style="font-size: 0.72rem; color: var(--text-muted);">Không được trùng lặp</span>
+                <span>Mã Số Hóa Đơn Định Danh (*)</span>
+                <span style="font-size: 0.75rem; color: var(--muted-foreground);">Duy nhất toàn hệ thống</span>
               </label>
-              <div class="input-with-button">
-                <input type="text" id="inputMaHD" class="form-control font-mono" placeholder="VD: HD-HUFLIT-001 hoặc VAT-2026-01" required>
-                <button type="button" class="btn btn-outline btn-sm" id="btnCheckDuplicate">
-                  Kiểm Tra Trùng
-                </button>
+              <div class="input-group">
+                <input type="text" id="inputMaHD" class="form-control font-mono" placeholder="VD: HD-HUFLIT-001 hoặc VAT-2026-99" required>
+                <button type="button" class="btn btn-outline btn-sm" id="btnCheckDuplicate">Kiểm Tra Trùng</button>
               </div>
-              <div class="quick-tags">
-                <span style="font-size: 0.72rem; color: var(--text-muted); align-self: center;">Mẫu nhanh:</span>
-                <button type="button" class="tag-btn" onclick="quickFillInvoice('HD-HUFLIT-001')">HD-HUFLIT-001</button>
-                <button type="button" class="tag-btn" onclick="quickFillInvoice('HD-SEPOLIA-002')">HD-SEPOLIA-002</button>
-                <button type="button" class="tag-btn" onclick="quickFillInvoice('VAT-TAX-2026')">VAT-TAX-2026</button>
+              <div class="quick-tag-wrap">
+                <span style="font-size: 0.75rem; color: var(--muted-foreground); align-self: center;">Mẫu nhanh:</span>
+                <button type="button" class="quick-chip" onclick="quickFillInvoice('HD-HUFLIT-001')">HD-HUFLIT-001</button>
+                <button type="button" class="quick-chip" onclick="quickFillInvoice('HD-SEPOLIA-002')">HD-SEPOLIA-002</button>
+                <button type="button" class="quick-chip" onclick="quickFillInvoice('VAT-TAX-2026')">VAT-TAX-2026</button>
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-item">
               <label for="inputNguoiMua">
-                <span>Địa Chỉ Ví Bên Mua Hàng (Address 0x...) (*)</span>
-                <span style="font-size: 0.72rem; color: var(--text-muted);">EVM Account</span>
+                <span>Địa Chỉ Ví Bên Mua Hàng (EVM Address 0x...) (*)</span>
               </label>
               <input type="text" id="inputNguoiMua" class="form-control font-mono" placeholder="0x..." required>
-              <div class="quick-tags">
-                <span style="font-size: 0.72rem; color: var(--text-muted); align-self: center;">Khách hàng mẫu:</span>
-                <button type="button" class="tag-btn" onclick="document.getElementById('inputNguoiMua').value='0x70997970C51812dc3A010C7d01b50e0d17dc79C8'">Công ty Cổ phần A (0x7099...)</button>
-                <button type="button" class="tag-btn" onclick="document.getElementById('inputNguoiMua').value='0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'">Tập đoàn B (0x3C44...)</button>
+              <div class="quick-tag-wrap">
+                <span style="font-size: 0.75rem; color: var(--muted-foreground); align-self: center;">Khách hàng mẫu:</span>
+                <button type="button" class="quick-chip" onclick="document.getElementById('inputNguoiMua').value='0x70997970C51812dc3A010C7d01b50e0d17dc79C8'">Công ty A (0x7099...)</button>
+                <button type="button" class="quick-chip" onclick="document.getElementById('inputNguoiMua').value='0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'">Tập đoàn B (0x3C44...)</button>
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-item">
               <label for="inputGiaTri">
                 <span>Tổng Tiền Thanh Toán (VNĐ) (*)</span>
-                <span id="formattedGiaTriDisplay" class="font-mono" style="color: var(--color-emerald); font-weight: 700;">0 VNĐ</span>
+                <span id="formattedGiaTriDisplay" style="font-family: var(--font-mono); color: var(--emerald); font-weight: 700;">0 VNĐ</span>
               </label>
               <input type="number" id="inputGiaTri" class="form-control font-mono" placeholder="5000000" min="1000" step="1000" required>
-              <div class="form-hint">Dữ liệu tiền tệ được băm và ghi vĩnh viễn vào khối blockchain, không thể sửa đổi sau khi phát hành.</div>
+              <div class="form-helper">Số tiền sẽ được chốt bất biến trên hợp đồng thông minh, phục vụ tính thuế chuẩn xác.</div>
             </div>
 
             <div style="margin-top: 24px;">
-              <button type="button" class="btn btn-navy" id="btnSubmitInvoice" style="width: 100%; padding: 12px; font-size: 0.92rem;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button type="button" class="btn btn-primary" id="btnSubmitInvoice" style="width: 100%; height: 42px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   <path d="m9 12 2 2 4-4"></path>
                 </svg>
@@ -191,99 +264,91 @@
             </div>
           </form>
 
-          <!-- Hộp kết quả phát hành & Stepper -->
+          <!-- Hộp kết quả và stepper tiến trình ký giao dịch -->
           <div id="issueResultBox" style="display: none;"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Cột Phải: Tra Cứu & Phiếu Hóa Đơn GTGT Điện Tử -->
-      <section class="card">
-        <div class="card-header">
-          <h2>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            Cổng Tra Cứu & Xác Thực Hóa Đơn
-          </h2>
-          <span style="font-size: 0.72rem; font-weight: 600; color: var(--color-emerald); background: var(--color-emerald-bg); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--color-emerald-border);">
-            Dành Cho Cơ Quan Thuế
+    <!-- ======================================================================
+         TAB 3: TRA CỨU & ĐỐI SOÁT (LOOKUP & VERIFY)
+         ====================================================================== -->
+    <section class="tab-content" id="tab-lookup">
+      <div class="card" style="max-width: 820px; margin: 0 auto;">
+        <div class="card-header-styled">
+          <div>
+            <h3>Tra Cứu & Xác Thực Tính Toàn Vẹn Hóa Đơn</h3>
+            <p>Dành cho Cơ quan Thuế, Đơn vị Kiểm toán và Khách hàng đối soát hóa đơn</p>
+          </div>
+          <span style="font-size: 0.75rem; background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+            Cục Thuế Audit
           </span>
         </div>
 
-        <div class="card-body">
-          <div class="form-group">
-            <label for="inputLookupMaHD">Nhập Mã Số Hóa Đơn Cần Tra Cứu</label>
-            <div class="input-with-button">
-              <input type="text" id="inputLookupMaHD" class="form-control font-mono" placeholder="Nhập mã định danh hóa đơn...">
+        <div class="card-body-styled">
+          <div class="form-item">
+            <label for="inputLookupMaHD">Nhập Mã Số Hóa Đơn Cần Kiểm Định</label>
+            <div class="input-group">
+              <input type="text" id="inputLookupMaHD" class="form-control font-mono" placeholder="Nhập chính xác mã hóa đơn (VD: HD-HUFLIT-001)...">
               <button type="button" class="btn btn-primary" id="btnLookupInvoice">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 Tra Cứu
               </button>
             </div>
-            <div class="form-hint">Dữ liệu đọc trực tiếp từ Sổ cái Hợp đồng thông minh Ethereum Sepolia để đối soát tính toàn vẹn.</div>
+            <div class="form-helper">Hệ thống sẽ đọc trực tiếp từ State Mapping của Smart Contract để kiểm tra xem hóa đơn có thật hay bị làm giả.</div>
           </div>
 
-          <!-- Khu vực hiển thị Phiếu Hóa Đơn GTGT Điện Tử -->
+          <!-- Khu vực hiển thị Phiếu Hóa Đơn GTGT -->
           <div id="lookupResultBox">
             <div class="alert alert-info">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
               <div>
-                Vui lòng nhập mã hóa đơn và bấm <strong>Tra Cứu</strong> để xuất Phiếu Hóa Đơn Điện Tử Giá Trị Gia Tăng có Dấu Ký Số Blockchain.
+                Nhập mã định danh hóa đơn vào ô bên trên và bấm <strong>Tra Cứu</strong> để xuất Phiếu Hóa Đơn Điện Tử Giá Trị Gia Tăng có Dấu Ký Số Blockchain.
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </main>
-
-    <!-- Sổ Cái Hóa Đơn Điện Tử Trực Tuyến -->
-    <section class="card" style="margin-bottom: 24px;">
-      <div class="card-header">
-        <h2>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-navy)" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          Sổ Cái Hóa Đơn Điện Tử Toàn Hệ Thống (Public Blockchain Ledger)
-        </h2>
-        <button class="btn btn-outline btn-sm" id="btnRefreshLedger">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-          Đồng Bộ Sổ Cái
-        </button>
       </div>
+    </section>
 
-      <!-- Filter Bar -->
-      <div class="ledger-filter-bar">
-        <div class="filter-input-wrap">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="inputLedgerFilter" class="form-control" placeholder="Tìm kiếm theo mã HĐ hoặc địa chỉ ví..." oninput="filterLedgerTable()">
+    <!-- ======================================================================
+         TAB 4: SỔ CÁI BLOCKCHAIN TOÀN BỘ (FULL LEDGER)
+         ====================================================================== -->
+    <section class="tab-content" id="tab-ledger">
+      <div class="card">
+        <div class="card-header-styled">
+          <div>
+            <h3>Sổ Cái Hóa Đơn Điện Tử Toàn Hệ Thống</h3>
+            <p>Danh sách toàn bộ các hóa đơn đã được xác thực và đóng khối trên mạng Sepolia</p>
+          </div>
+          <button class="btn btn-outline btn-sm" id="btnRefreshLedger">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Đồng Bộ Sổ Cái
+          </button>
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted);" id="ledgerFilterCount">
-          Đang tải dữ liệu...
-        </div>
-      </div>
 
-      <div class="card-body" style="padding: 0;">
+        <!-- Search Bar -->
+        <div class="table-filter-bar">
+          <div class="search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="inputLedgerFilter" class="form-control" placeholder="Lọc theo mã hóa đơn hoặc địa chỉ ví..." oninput="filterLedgerTable()">
+          </div>
+          <div style="font-size: 0.8rem; color: var(--muted-foreground);" id="ledgerFilterCount">
+            Đang tải dữ liệu...
+          </div>
+        </div>
+
         <div class="table-responsive">
-          <table class="ledger-table">
+          <table class="shadcn-table">
             <thead>
               <tr>
-                <th style="width: 50px;">STT</th>
+                <th style="width: 50px; text-align: center;">STT</th>
                 <th>Mã Số Hóa Đơn</th>
-                <th>Đơn Vị Bán (Doanh Nghiệp)</th>
+                <th>Đơn Vị Phát Hành (Người Bán)</th>
                 <th>Khách Hàng (Người Mua)</th>
                 <th>Tổng Tiền Thanh Toán</th>
                 <th>Thời Gian Ghi Khối</th>
@@ -292,7 +357,7 @@
             </thead>
             <tbody id="ledgerTableBody">
               <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">
+                <td colspan="7" style="text-align: center; color: var(--muted-foreground); padding: 36px;">
                   Đang đồng bộ sổ cái từ Ethereum Sepolia Testnet...
                 </td>
               </tr>
@@ -302,15 +367,15 @@
       </div>
     </section>
 
-    <!-- Footer Học Thuật Chuẩn Đại Học HUFLIT -->
-    <footer style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 24px 0; border-top: 1px solid var(--border-subtle); margin-top: 20px;">
+    <!-- Footer Học Thuật HUFLIT -->
+    <footer style="text-align: center; color: var(--muted-foreground); font-size: 0.8rem; padding: 36px 0; border-top: 1px solid var(--border); margin-top: 40px;">
       Trường Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh (HUFLIT) • Khoa Công Nghệ Thông Tin<br>
       <strong>Đồ án Môn học: Blockchain và Ứng dụng</strong> • Đề tài 4: Hóa đơn điện tử chống gian lận thuế<br>
       Giảng viên hướng dẫn: TS. Trần Minh Thái
     </footer>
-  </div>
+  </main>
 
-  <!-- Toast Container -->
+  <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Scripts -->
