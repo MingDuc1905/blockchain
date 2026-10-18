@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useWeb3 } from '../context/Web3Context';
-import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
-import { Search, ShieldCheck, AlertTriangle, Copy, CheckCircle } from 'lucide-react';
+import { CONTRACT_CONFIG } from '../utils/contract';
+
+import { formatVND, readVietnameseCurrency } from '../utils/taxHelper';
+import { Search, ShieldCheck, AlertTriangle, Copy, Printer } from 'lucide-react';
+import InvoicePrintModal from './InvoicePrintModal';
 
 export default function LookupTab({ initialCode }) {
   const { readContract, showToast } = useWeb3();
@@ -10,10 +13,11 @@ export default function LookupTab({ initialCode }) {
   const [invoiceData, setInvoiceData] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
-  const handleLookup = async (e) => {
-    if (e) e.preventDefault();
-    if (!maHD.trim()) {
+  const executeLookup = useCallback(async (codeToSearch) => {
+    const code = (codeToSearch || maHD).trim();
+    if (!code) {
       showToast('Thông Báo', 'Vui lòng nhập Mã Số Hóa Đơn cần tra cứu!', 'warning');
       return;
     }
@@ -24,18 +28,18 @@ export default function LookupTab({ initialCode }) {
 
     try {
       if (!readContract) {
-        showToast('Chưa Sẵn Sàng', 'Đang kết nối RPC Sepolia, vui lòng thử lại sau 2 giây!', 'warning');
+        showToast('Chưa Sẵn Sàng', 'Đang kết nối RPC Sepolia, vui lòng thử lại sau giây lát!', 'warning');
         return;
       }
 
-      const daTonTai = await readContract.kiemTraTrungLap(maHD.trim());
+      const daTonTai = await readContract.kiemTraTrungLap(code);
       if (!daTonTai) {
         setNotFound(true);
-        showToast('Không Tồn Tại', `Hóa đơn "${maHD}" không có bản ghi nào trên blockchain!`, 'danger');
+        showToast('Không Tồn Tại', `Hóa đơn "${code}" không có bản ghi nào trên blockchain!`, 'danger');
         return;
       }
 
-      const res = await readContract.traCuuHoaDon(maHD.trim());
+      const res = await readContract.traCuuHoaDon(code);
       const [maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian] = res;
 
       setInvoiceData({
@@ -46,7 +50,7 @@ export default function LookupTab({ initialCode }) {
         thoiGian: Number(thoiGian)
       });
 
-      showToast('Xác Thực Hợp Lệ', `Đã tìm thấy hóa đơn [${maHD}] trên khối Sepolia!`, 'success');
+      showToast('Xác Thực Hợp Lệ', `Đã tìm thấy hóa đơn [${code}] trên chuỗi khối!`, 'success');
 
     } catch (err) {
       console.error('Lỗi tra cứu:', err);
@@ -54,6 +58,19 @@ export default function LookupTab({ initialCode }) {
     } finally {
       setLoading(false);
     }
+  }, [maHD, readContract, showToast]);
+
+  useEffect(() => {
+    if (initialCode) {
+      setMaHD(initialCode);
+      executeLookup(initialCode);
+    }
+  }, [initialCode, executeLookup]);
+
+
+  const handleLookup = (e) => {
+    if (e) e.preventDefault();
+    executeLookup(maHD);
   };
 
   const handleCopy = (text, label) => {
@@ -62,191 +79,201 @@ export default function LookupTab({ initialCode }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white border border-zinc-200 rounded-lg shadow-sm">
-      <div className="p-5 border-b border-zinc-200 flex justify-between items-center">
-        <div>
-          <h3 className="font-semibold text-base text-zinc-950">Tra Cứu & Xác Thực Tính Toàn Vẹn Hóa Đơn</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">Dành cho Cơ quan Thuế và Khách hàng đối soát hóa đơn trực tiếp từ Smart Contract</p>
-        </div>
-        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-medium">
-          Tax Authority Audit
-        </span>
-      </div>
-
-      <div className="p-6">
-        <form onSubmit={handleLookup} className="flex gap-2 mb-6">
-          <div className="relative flex-1">
-            <input 
-              type="text" 
-              value={maHD}
-              onChange={(e) => setMaHD(e.target.value)}
-              placeholder="Nhập mã định danh hóa đơn (VD: HD-HUFLIT-001)..." 
-              className="w-full h-9 px-3 text-sm font-mono border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-950"
-            />
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Search Header Container */}
+      <div className="bg-white border border-zinc-200/90 rounded-xl shadow-xs overflow-hidden">
+        {/* Header (Seamless white, no nested card) */}
+        <div className="p-5 sm:px-7 border-b border-zinc-100 flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h3 className="font-semibold text-base text-zinc-950">
+              Tra Cứu & Xác Thực Tính Toàn Vẹn Hóa Đơn
+            </h3>
+            <p className="text-xs text-zinc-600 mt-0.5">
+              Dành cho Cơ quan Thuế và Khách hàng đối soát hóa đơn trực tiếp từ Smart Contract
+            </p>
           </div>
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="h-9 px-4 inline-flex items-center gap-1.5 text-xs font-medium rounded-md bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors"
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span>Tra Cứu</span>
-          </button>
-        </form>
+          <span className="text-xs font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Tax Authority Audit</span>
+          </span>
+        </div>
 
-        {/* Skeleton loading khi đang truy vấn */}
-        {loading && (
-          <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm animate-pulse space-y-4">
-            <div className="text-center space-y-2 border-b border-zinc-200 pb-4">
+        <div className="p-6 sm:p-7">
+          <form onSubmit={handleLookup} className="flex gap-2">
+            <div className="relative flex-1">
+              <input 
+                type="text" 
+                value={maHD}
+                onChange={(e) => setMaHD(e.target.value)}
+                placeholder="Nhập mã định danh hóa đơn (VD: HD-2026-001 hoặc HD-2026-002)..." 
+                className="w-full h-10 px-3.5 text-xs font-mono border border-zinc-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-zinc-950 bg-white text-zinc-900"
+              />
+            </div>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="h-10 px-5 inline-flex items-center gap-2 text-xs font-semibold rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors cursor-pointer btn-tactile shadow-xs"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>{loading ? 'Đang đọc...' : 'Tra Cứu'}</span>
+            </button>
+          </form>
+
+          {/* Chưa tìm kiếm (Flat layout, no nested card, constrained line length) */}
+          {!loading && !invoiceData && !notFound && (
+            <div className="mt-6 pt-5 border-t border-zinc-100 text-center text-xs text-zinc-600 space-y-2.5">
+              <p className="max-w-md mx-auto leading-relaxed">
+                Nhập mã số hóa đơn để tra cứu dữ liệu gốc đã được mã hóa bất biến trên mạng Ethereum Sepolia.
+              </p>
+              <div className="flex gap-2 justify-center items-center flex-wrap pt-1">
+                <span className="text-zinc-700 font-medium">Gợi ý mã mẫu:</span>
+                {['HD-2026-001', 'HD-2026-002', 'HD-2026-003'].map(sample => (
+                  <button
+                    key={sample}
+                    type="button"
+                    onClick={() => {
+                      setMaHD(sample);
+                      executeLookup(sample);
+                    }}
+                    className="font-mono text-xs text-zinc-800 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  >
+                    {sample}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Skeleton loading khi đang truy vấn */}
+          {loading && (
+            <div className="mt-6 pt-6 border-t border-zinc-100 animate-pulse space-y-4">
               <div className="h-6 w-64 bg-zinc-200 rounded mx-auto" />
               <div className="h-4 w-80 bg-zinc-100 rounded mx-auto" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="h-4 w-28 bg-zinc-200 rounded" />
-                <div className="h-3 w-40 bg-zinc-100 rounded" />
-                <div className="h-3 w-36 bg-zinc-100 rounded" />
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 w-28 bg-zinc-200 rounded" />
-                <div className="h-3 w-40 bg-zinc-100 rounded" />
-                <div className="h-3 w-36 bg-zinc-100 rounded" />
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="h-20 bg-zinc-100 rounded" />
+                <div className="h-20 bg-zinc-100 rounded" />
               </div>
             </div>
-            <div className="h-16 w-full bg-zinc-100 rounded" />
-          </div>
-        )}
+          )}
 
-        {/* Chưa tìm kiếm */}
-        {!loading && !invoiceData && !notFound && (
-          <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-md text-center text-xs text-zinc-500">
-            Vui lòng nhập mã hóa đơn và bấm <strong>Tra Cứu</strong> để xuất Phiếu Hóa Đơn Điện Tử Giá Trị Gia Tăng có Dấu Ký Số Blockchain.
-          </div>
-        )}
-
-        {/* Cảnh báo không tìm thấy / Gian lận */}
-        {notFound && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md text-sm text-red-900 flex gap-3 items-start">
-            <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div>
-              <strong className="block font-semibold">CẢNH BÁO GIAN LẬN / KHÔNG TỒN TẠI TRÊN BLOCKCHAIN:</strong>
-              <p className="text-xs text-red-800 mt-1 leading-relaxed">
-                Hóa đơn có mã <strong>"{maHD}"</strong> không có bản ghi nào trên Ethereum Sepolia.<br />
-                <em>Khuyến cáo: Hóa đơn này không có giá trị khấu trừ thuế hoặc có dấu hiệu làm giả ngoài sổ cái.</em>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Phiếu Hóa Đơn GTGT Điện Tử */}
-        {invoiceData && (
-          <div className="bg-white border border-zinc-300 rounded-lg p-6 shadow-sm">
-            {/* Header Phiếu */}
-            <div className="text-center border-b-2 border-zinc-900 pb-4 mb-4">
-              <h2 className="font-bold text-lg uppercase tracking-wide text-zinc-900">
-                HÓA ĐƠN GIÁ TRỊ GIA TĂNG (ĐIỆN TỬ)
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                Bản thể hiện điện tử đối soát trực tiếp từ Smart Contract Ethereum Sepolia
-              </p>
-              <div className="text-xs font-mono font-bold text-zinc-900 mt-1">
-                Mã Số: #{invoiceData.maHoaDon} • Ký Hiệu: 1C26TMB
-              </div>
-            </div>
-
-            {/* Thông tin Bên Bán & Bên Mua */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-xs">
-              <div className="space-y-1.5">
-                <div className="font-bold text-zinc-900 text-sm mb-1">ĐƠN VỊ BÁN HÀNG:</div>
-                <div className="flex justify-between border-b border-dashed border-zinc-200 pb-1">
-                  <span className="text-zinc-500">Địa chỉ ví:</span>
-                  <span className="font-mono font-semibold text-zinc-900 flex items-center gap-1">
-                    <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${invoiceData.nguoiBan}`} target="_blank" rel="noreferrer" className="underline hover:text-blue-600">
-                      {shortenAddress(invoiceData.nguoiBan)} ↗
-                    </a>
-                    <button onClick={() => handleCopy(invoiceData.nguoiBan, 'Ví người bán')} className="text-zinc-400 hover:text-zinc-800">
-                      <Copy className="w-3 h-3" />
-                    </button>
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-dashed border-zinc-200 pb-1">
-                  <span className="text-zinc-500">Hình thức thanh toán:</span>
-                  <span className="font-medium text-zinc-800">Chuyển khoản Web3</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="font-bold text-zinc-900 text-sm mb-1">ĐƠN VỊ MUA HÀNG:</div>
-                <div className="flex justify-between border-b border-dashed border-zinc-200 pb-1">
-                  <span className="text-zinc-500">Địa chỉ ví:</span>
-                  <span className="font-mono font-semibold text-zinc-900 flex items-center gap-1">
-                    <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${invoiceData.nguoiMua}`} target="_blank" rel="noreferrer" className="underline hover:text-blue-600">
-                      {shortenAddress(invoiceData.nguoiMua)} ↗
-                    </a>
-                    <button onClick={() => handleCopy(invoiceData.nguoiMua, 'Ví người mua')} className="text-zinc-400 hover:text-zinc-800">
-                      <Copy className="w-3 h-3" />
-                    </button>
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-dashed border-zinc-200 pb-1">
-                  <span className="text-zinc-500">Thời điểm ghi khối:</span>
-                  <span className="font-medium text-zinc-800">
-                    {new Date(invoiceData.thoiGian * 1000).toLocaleString('vi-VN')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bảng kê hàng hóa */}
-            <table className="w-full text-xs border border-zinc-200 mb-4">
-              <thead className="bg-zinc-100 text-zinc-700">
-                <tr>
-                  <th className="p-2 border border-zinc-200 text-center w-10">STT</th>
-                  <th className="p-2 border border-zinc-200 text-left">Tên Hàng Hóa, Dịch Vụ</th>
-                  <th className="p-2 border border-zinc-200 text-center w-14">ĐVT</th>
-                  <th className="p-2 border border-zinc-200 text-center w-16">Số Lượng</th>
-                  <th className="p-2 border border-zinc-200 text-right">Thành Tiền (VNĐ)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="p-2 border border-zinc-200 text-center">1</td>
-                  <td className="p-2 border border-zinc-200 font-medium">Dịch vụ giải pháp số & phần mềm hóa đơn điện tử bảo chứng Blockchain</td>
-                  <td className="p-2 border border-zinc-200 text-center">Gói</td>
-                  <td className="p-2 border border-zinc-200 text-center font-mono">1</td>
-                  <td className="p-2 border border-zinc-200 text-right font-mono font-bold text-zinc-900">
-                    {invoiceData.giaTri.toLocaleString('vi-VN')}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Tổng tiền */}
-            <div className="flex justify-between items-center p-3.5 bg-zinc-50 border border-zinc-200 rounded-md">
-              <div>
-                <span className="text-xs uppercase font-bold text-zinc-500 block">Tổng Tiền Thanh Toán:</span>
-                <span className="text-[11px] text-zinc-400 italic">(Đã bao gồm thuế GTGT hợp lệ)</span>
-              </div>
-              <div className="text-lg font-mono font-bold text-emerald-600">
-                {invoiceData.giaTri.toLocaleString('vi-VN')} VNĐ
-              </div>
-            </div>
-
-            {/* Con dấu điện tử Blockchain */}
-            <div className="mt-4 p-3 bg-emerald-50 border border-dashed border-emerald-300 rounded-md flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full border-2 border-emerald-600 flex items-center justify-center text-emerald-600 shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="text-xs text-emerald-800 leading-snug">
-                <strong className="block text-emerald-900 uppercase tracking-wider text-[11px]">
-                  ĐÃ KÝ SỐ VÀ BẢO CHỨNG BLOCKCHAIN
+          {/* Cảnh báo không tìm thấy / Gian lận */}
+          {notFound && (
+            <div className="mt-6 p-5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-950 flex gap-3.5 items-start">
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <strong className="block font-bold text-red-900">
+                  CẢNH BÁO: HÓA ĐƠN KHÔNG TỒN TẠI TRÊN SỔ CÁI BLOCKCHAIN!
                 </strong>
-                Xác thực tự động bởi Smart Contract Sepolia • Không thể sửa đổi • Chống xuất khống 100%.
+                <p className="text-xs text-red-800 leading-relaxed">
+                  Mã hóa đơn <code className="font-mono font-bold bg-red-100 px-1 py-0.5 rounded">"{maHD}"</code> chưa từng được phát hành hoặc không tồn tại trong hợp đồng thông minh.
+                </p>
+                <p className="text-xs text-red-700 italic pt-1">
+                  Khuyến cáo Cơ quan Thuế & Doanh nghiệp: Hóa đơn này không đủ điều kiện khấu trừ thuế GTGT hoặc có dấu hiệu làm giả mạo ngoài chuỗi khối.
+                </p>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Kết quả Tra cứu Hợp Lệ (Flat layout, no nested cards) */}
+          {invoiceData && (
+            <div className="mt-6 pt-5 border-t border-zinc-200 space-y-5">
+              {/* Header Box */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-zinc-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-950 font-mono">
+                      HÓA ĐƠN HỢP LỆ: #{invoiceData.maHoaDon}
+                    </h4>
+                    <p className="text-xs text-zinc-600 mt-0.5">
+                      Ghi nhận vào chuỗi khối lúc: {new Date(invoiceData.thoiGian * 1000).toLocaleString('vi-VN')}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPrintModal(true)}
+                  className="inline-flex items-center gap-2 h-8 px-3.5 text-xs font-semibold rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer shadow-xs btn-tactile"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Xem & In Bản Thể Hiện A4</span>
+                </button>
+              </div>
+
+              {/* Thông tin đối soát 2 bên (Flat columns) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                {/* Bên Bán */}
+                <div className="space-y-2.5">
+                  <div className="font-semibold text-zinc-950 text-xs pb-1 border-b border-zinc-100">
+                    Đơn vị bán (phát hành)
+                  </div>
+                  <div>
+                    <span className="text-zinc-600 block text-xs">Địa chỉ ví msg.sender:</span>
+                    <div className="font-mono text-zinc-900 flex items-center justify-between bg-zinc-50 p-2 rounded border border-zinc-200 mt-0.5">
+                      <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${invoiceData.nguoiBan}`} target="_blank" rel="noreferrer" className="underline hover:text-emerald-700 truncate">
+                        {invoiceData.nguoiBan}
+                      </a>
+                      <button onClick={() => handleCopy(invoiceData.nguoiBan, 'Ví người bán')} className="text-zinc-500 hover:text-zinc-800 ml-1">
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xs text-emerald-700 font-medium">
+                    ✓ Khóa riêng ECDSA đã ký xác thực
+                  </div>
+                </div>
+
+                {/* Bên Mua */}
+                <div className="space-y-2.5">
+                  <div className="font-semibold text-zinc-950 text-xs pb-1 border-b border-zinc-100">
+                    Đơn vị mua (khách hàng)
+                  </div>
+                  <div>
+                    <span className="text-zinc-600 block text-xs">Địa chỉ ví nhận:</span>
+                    <div className="font-mono text-zinc-900 flex items-center justify-between bg-zinc-50 p-2 rounded border border-zinc-200 mt-0.5">
+                      <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${invoiceData.nguoiMua}`} target="_blank" rel="noreferrer" className="underline hover:text-emerald-700 truncate">
+                        {invoiceData.nguoiMua}
+                      </a>
+                      <button onClick={() => handleCopy(invoiceData.nguoiMua, 'Ví người mua')} className="text-zinc-500 hover:text-zinc-800 ml-1">
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xs text-zinc-600">
+                    Hình thức: Nhận hóa đơn điện tử bảo chứng
+                  </div>
+                </div>
+              </div>
+
+              {/* Khối tiền thanh toán (Flat layout) */}
+              <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-700 block">
+                    Tổng giá trị thanh toán hóa đơn:
+                  </span>
+                  <span className="text-xs text-zinc-800 italic">
+                    {readVietnameseCurrency(invoiceData.giaTri)}
+                  </span>
+                </div>
+                <div className="font-mono font-bold text-xl text-emerald-800 tabular-nums">
+                  {formatVND(invoiceData.giaTri)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Invoice Print Modal */}
+      {showPrintModal && invoiceData && (
+        <InvoicePrintModal
+          invoice={invoiceData}
+          onClose={() => setShowPrintModal(false)}
+        />
+      )}
     </div>
   );
 }

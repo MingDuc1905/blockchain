@@ -17,7 +17,7 @@ export default function Navbar({ activeTab, onSelectTab }) {
           <div className="w-7 h-7 bg-zinc-900 rounded-md flex items-center justify-center text-white">
             <Shield className="w-4 h-4" />
           </div>
-          <span className="font-semibold">HUFLIT TaxChain</span>
+          <span className="font-semibold">TaxChain</span>
         </a>
 
         <nav className="hidden md:flex items-center gap-1">

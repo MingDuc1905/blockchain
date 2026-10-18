@@ -7,6 +7,8 @@ import DashboardTab from './components/DashboardTab';
 import IssueInvoiceTab from './components/IssueInvoiceTab';
 import LookupTab from './components/LookupTab';
 import DataTable from './components/DataTable';
+import CommandPalette from './components/CommandPalette';
+import InvoicePrintModal from './components/InvoicePrintModal';
 
 function DashboardApp() {
   const { readContract, latestBlock, fetchBlockNumber, toast } = useWeb3();
@@ -15,6 +17,8 @@ function DashboardApp() {
   const [loadingLedger, setLoadingLedger] = useState(false);
   const [lookupInitialCode, setLookupInitialCode] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [selectedPrintInvoice, setSelectedPrintInvoice] = useState(null);
 
   const loadLedger = async () => {
     if (!readContract) return;
@@ -61,6 +65,10 @@ function DashboardApp() {
     setActiveTab('lookup');
   };
 
+  const handleSelectFromCommandPalette = (inv) => {
+    setSelectedPrintInvoice(inv);
+  };
+
   return (
     <div className="min-h-screen bg-white text-zinc-950 flex antialiased">
       {/* 1. AppSidebar (Collapsible Inset style) */}
@@ -73,6 +81,7 @@ function DashboardApp() {
         <SiteHeader 
           activeTab={activeTab} 
           onToggleSidebar={() => setShowSidebar(!showSidebar)} 
+          onOpenCommandPalette={() => setIsCommandOpen(true)}
         />
 
         <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
@@ -85,23 +94,23 @@ function DashboardApp() {
                 {activeTab === 'lookup' && 'Tra Cứu & Xác Thực Toàn Vẹn'}
                 {activeTab === 'ledger' && 'Sổ Cái Hóa Đơn Điện Tử On-Chain'}
               </h2>
-              <p className="text-xs text-zinc-500 mt-1">
-                Hệ thống hóa đơn điện tử chống gian lận thuế doanh nghiệp trên mạng phân tán Ethereum Sepolia
+              <p className="text-xs text-zinc-700 mt-1 max-w-md leading-relaxed">
+                Hệ thống hóa đơn điện tử chống gian lận thuế doanh nghiệp trên mạng Ethereum Sepolia.
               </p>
             </div>
 
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setActiveTab('lookup')}
-                className="h-8 px-3 text-xs font-medium rounded-md border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors shadow-xs"
+                onClick={() => setIsCommandOpen(true)}
+                className="h-8 px-3 text-xs font-medium rounded-md border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors shadow-2xs btn-tactile cursor-pointer"
               >
-                Tra Cứu Nhanh
+                🔍 Tìm Kiếm (Ctrl K)
               </button>
               <button 
                 onClick={() => setActiveTab('issue')}
-                className="h-8 px-3 text-xs font-medium rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs"
+                className="h-8 px-3 text-xs font-semibold rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs btn-tactile cursor-pointer"
               >
-                Lập Hóa Đơn Mới
+                ➕ Lập Hóa Đơn Mới
               </button>
             </div>
           </div>
@@ -143,13 +152,25 @@ function DashboardApp() {
             )}
           </div>
         </main>
-
-        {/* Footer */}
-        <footer className="text-center text-xs text-zinc-400 py-6 border-t border-zinc-200 mt-auto bg-zinc-50/50">
-          Trường Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh (HUFLIT) • Khoa Công Nghệ Thông Tin<br />
-          <strong>Đồ án Môn học: Blockchain và Ứng dụng</strong> • Đề tài 4: Hóa đơn điện tử chống gian lận thuế (GVHD: TS. Trần Minh Thái)
-        </footer>
       </div>
+
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={isCommandOpen}
+        onClose={() => setIsCommandOpen(false)}
+        invoices={invoices}
+        onSelectInvoice={handleSelectFromCommandPalette}
+        onSelectTab={setActiveTab}
+      />
+
+      {/* Global Invoice Print Modal */}
+      {selectedPrintInvoice && (
+        <InvoicePrintModal
+          invoice={selectedPrintInvoice}
+          onClose={() => setSelectedPrintInvoice(null)}
+        />
+      )}
 
       {/* Toast Notification */}
       {toast && (
