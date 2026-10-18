@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Web3Provider, useWeb3 } from './context/Web3Context';
-import Navbar from './components/Navbar';
-import MetricCards from './components/MetricCards';
+import AppSidebar from './components/AppSidebar';
+import SiteHeader from './components/SiteHeader';
+import SectionCards from './components/SectionCards';
 import DashboardTab from './components/DashboardTab';
 import IssueInvoiceTab from './components/IssueInvoiceTab';
 import LookupTab from './components/LookupTab';
-import LedgerTab from './components/LedgerTab';
-import { CONTRACT_CONFIG } from './utils/contract';
+import DataTable from './components/DataTable';
 
-function MainApp() {
+function DashboardApp() {
   const { readContract, toast } = useWeb3();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [invoices, setInvoices] = useState([]);
   const [lookupInitialCode, setLookupInitialCode] = useState('');
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const loadLedger = async () => {
     if (!readContract) return;
@@ -53,126 +54,93 @@ function MainApp() {
     setActiveTab('lookup');
   };
 
-  const getPageTitle = () => {
-    switch (activeTab) {
-      case 'dashboard': return 'Bảng Điều Khiển Hóa Đơn Điện Tử';
-      case 'issue': return 'Kê Khai & Ký Số Hóa Đơn Mới';
-      case 'lookup': return 'Tra Cứu & Xác Thực Tính Toàn Vẹn';
-      case 'ledger': return 'Sổ Cái Hóa Đơn Điện Tử On-Chain';
-      default: return 'HUFLIT Blockchain';
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-white text-zinc-950 flex flex-col font-sans">
-      <Navbar activeTab={activeTab} onSelectTab={setActiveTab} />
+    <div className="min-h-screen bg-white text-zinc-950 flex antialiased">
+      {/* 1. AppSidebar (Collapsible Inset style) */}
+      {showSidebar && (
+        <AppSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
+      )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-8">
-        {/* Page Title & Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
-              {getPageTitle()}
-            </h1>
-            <p className="text-sm text-zinc-500 mt-0.5">
-              Hệ thống chống gian lận và xuất khống hóa đơn doanh nghiệp trên Ethereum Sepolia
-            </p>
+      {/* 2. Main Content Inset */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <SiteHeader 
+          activeTab={activeTab} 
+          onToggleSidebar={() => setShowSidebar(!showSidebar)} 
+        />
+
+        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+          {/* Header Action Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-950">
+                {activeTab === 'dashboard' && 'Dashboard Tổng Quan'}
+                {activeTab === 'issue' && 'Kê Khai & Ký Số Hóa Đơn Mới'}
+                {activeTab === 'lookup' && 'Tra Cứu & Xác Thực Toàn Vẹn'}
+                {activeTab === 'ledger' && 'Sổ Cái Hóa Đơn Điện Tử On-Chain'}
+              </h2>
+              <p className="text-xs text-zinc-500 mt-1">
+                Hệ thống hóa đơn điện tử chống gian lận thuế doanh nghiệp trên mạng phân tán Ethereum Sepolia
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setActiveTab('lookup')}
+                className="h-8 px-3 text-xs font-medium rounded-md border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors shadow-xs"
+              >
+                Tra Cứu Nhanh
+              </button>
+              <button 
+                onClick={() => setActiveTab('issue')}
+                className="h-8 px-3 text-xs font-medium rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs"
+              >
+                Lập Hóa Đơn Mới
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setActiveTab('lookup')}
-              className="h-8 px-3 text-xs font-medium rounded-md border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors"
-            >
-              Tra Cứu Nhanh
-            </button>
-            <button 
-              onClick={() => setActiveTab('issue')}
-              className="h-8 px-3 text-xs font-medium rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-sm"
-            >
-              Lập Hóa Đơn Mới
-            </button>
+          {/* SectionCards (4 KPI Cards chuẩn Shadcn v4) */}
+          <SectionCards totalInvoices={invoices.length} />
+
+          {/* Dynamic Content Views */}
+          <div className="mt-6">
+            {activeTab === 'dashboard' && (
+              <DashboardTab 
+                recentInvoices={invoices} 
+                onSelectTab={setActiveTab} 
+                onQuickLookup={handleSelectInvoiceForLookup}
+                onRefresh={loadLedger}
+              />
+            )}
+
+            {activeTab === 'issue' && (
+              <IssueInvoiceTab onInvoiceIssued={loadLedger} />
+            )}
+
+            {activeTab === 'lookup' && (
+              <LookupTab initialCode={lookupInitialCode} />
+            )}
+
+            {activeTab === 'ledger' && (
+              <DataTable 
+                invoices={invoices} 
+                onRefresh={loadLedger} 
+                onSelectInvoice={handleSelectInvoiceForLookup}
+              />
+            )}
           </div>
-        </div>
+        </main>
 
-        {/* Tab Selection Pill Bar (Shadcn Style) */}
-        <div className="inline-flex bg-zinc-100 p-1 rounded-lg gap-1 mb-6 text-xs sm:text-sm">
-          <button 
-            onClick={() => setActiveTab('dashboard')}
-            className={`px-3 py-1.5 font-medium rounded-md transition-all ${
-              activeTab === 'dashboard' ? 'bg-white text-zinc-950 shadow-sm font-semibold' : 'text-zinc-500 hover:text-zinc-900'
-            }`}
-          >
-            Tổng Quan
-          </button>
-          <button 
-            onClick={() => setActiveTab('issue')}
-            className={`px-3 py-1.5 font-medium rounded-md transition-all ${
-              activeTab === 'issue' ? 'bg-white text-zinc-950 shadow-sm font-semibold' : 'text-zinc-500 hover:text-zinc-900'
-            }`}
-          >
-            Phát Hành Hóa Đơn
-          </button>
-          <button 
-            onClick={() => setActiveTab('lookup')}
-            className={`px-3 py-1.5 font-medium rounded-md transition-all ${
-              activeTab === 'lookup' ? 'bg-white text-zinc-950 shadow-sm font-semibold' : 'text-zinc-500 hover:text-zinc-900'
-            }`}
-          >
-            Tra Cứu & Đối Soát
-          </button>
-          <button 
-            onClick={() => setActiveTab('ledger')}
-            className={`px-3 py-1.5 font-medium rounded-md transition-all ${
-              activeTab === 'ledger' ? 'bg-white text-zinc-950 shadow-sm font-semibold' : 'text-zinc-500 hover:text-zinc-900'
-            }`}
-          >
-            Sổ Cái Toàn Bộ
-          </button>
-        </div>
-
-        {/* 4 Metric Stats Cards */}
-        <MetricCards totalInvoices={invoices.length} />
-
-        {/* Dynamic Tab Views */}
-        <div className="mt-6">
-          {activeTab === 'dashboard' && (
-            <DashboardTab 
-              recentInvoices={invoices} 
-              onSelectTab={setActiveTab} 
-              onQuickLookup={handleSelectInvoiceForLookup}
-              onRefresh={loadLedger}
-            />
-          )}
-
-          {activeTab === 'issue' && (
-            <IssueInvoiceTab onInvoiceIssued={loadLedger} />
-          )}
-
-          {activeTab === 'lookup' && (
-            <LookupTab initialCode={lookupInitialCode} />
-          )}
-
-          {activeTab === 'ledger' && (
-            <LedgerTab 
-              invoices={invoices} 
-              onRefresh={loadLedger} 
-              onSelectInvoice={handleSelectInvoiceForLookup}
-            />
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="text-center text-xs text-zinc-400 py-8 border-t border-zinc-200 mt-12">
-        Trường Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh (HUFLIT) • Khoa Công Nghệ Thông Tin<br />
-        <strong>Đồ án Môn học: Blockchain và Ứng dụng</strong> • Đề tài 4: Hóa đơn điện tử chống gian lận thuế<br />
-        Giảng viên hướng dẫn: TS. Trần Minh Thái
-      </footer>
+        {/* Footer */}
+        <footer className="text-center text-xs text-zinc-400 py-6 border-t border-zinc-200 mt-auto bg-zinc-50/50">
+          Trường Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh (HUFLIT) • Khoa Công Nghệ Thông Tin<br />
+          <strong>Đồ án Môn học: Blockchain và Ứng dụng</strong> • Đề tài 4: Hóa đơn điện tử chống gian lận thuế (GVHD: TS. Trần Minh Thái)
+        </footer>
+      </div>
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-white border border-zinc-200 rounded-lg shadow-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-white border border-zinc-200 rounded-xl shadow-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2">
           <div className="flex-1">
             <div className={`text-xs font-semibold ${
               toast.type === 'success' ? 'text-emerald-700' : 
@@ -191,7 +159,7 @@ function MainApp() {
 export default function App() {
   return (
     <Web3Provider>
-      <MainApp />
+      <DashboardApp />
     </Web3Provider>
   );
 }
