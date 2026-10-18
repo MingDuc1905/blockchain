@@ -1,6 +1,6 @@
 // Logic kết nối Web3 và tương tác Smart Contract Ethereum Sepolia
-// Đề tài 4: Hóa đơn điện tử chống gian lận thuế - HUFLIT (TS. Trần Minh Thái)
-// Thiết kế đạt chuẩn UI/UX Pro Max & Taste Design
+// Đồ án: Hóa đơn điện tử chống gian lận thuế - HUFLIT (GVHD: TS. Trần Minh Thái)
+// Phong cách: Enterprise Fintech & Tax Authority (Clean Light Mode)
 
 let userProvider = null;
 let userSigner = null;
@@ -9,7 +9,7 @@ let readOnlyContract = null;
 let writeContract = null;
 let ledgerCache = [];
 
-// Khởi chạy ngay khi DOM sẵn sàng
+// Khởi chạy khi DOM sẵn sàng
 window.addEventListener('DOMContentLoaded', async () => {
     initDefaultReadOnlyProvider();
     setupEventListeners();
@@ -51,10 +51,10 @@ function setupEventListeners() {
             const display = document.getElementById('formattedGiaTriDisplay');
             if (val > 0) {
                 display.innerText = val.toLocaleString('vi-VN') + " VNĐ";
-                display.style.color = "var(--accent-emerald)";
+                display.style.color = "var(--color-emerald)";
             } else {
                 display.innerText = "0 VNĐ";
-                display.style.color = "var(--text-dim)";
+                display.style.color = "var(--text-muted)";
             }
         });
     }
@@ -85,7 +85,7 @@ window.quickFillInvoice = function(code) {
 };
 
 // Tiện ích Sao chép văn bản vào bộ nhớ tạm
-window.copyText = function(text, label = "Văn bản") {
+window.copyText = function(text, label = "Dữ liệu") {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
         showToast("Đã Sao Chép", `${label} đã được lưu vào bộ nhớ tạm!`, "info");
@@ -97,7 +97,7 @@ window.copyText = function(text, label = "Văn bản") {
 // Kết nối Ví MetaMask
 async function connectWallet() {
     if (!window.ethereum) {
-        showToast("Chưa Cài Đặt Ví", "Vui lòng cài đặt tiện ích mở rộng MetaMask để tương tác on-chain!", "danger");
+        showToast("Chưa Cài Đặt Ví", "Vui lòng cài đặt tiện ích mở rộng MetaMask trên trình duyệt!", "danger");
         window.open("https://metamask.io/download/", "_blank");
         return;
     }
@@ -176,8 +176,8 @@ function disconnectWalletUI() {
     userAddress = null;
     userSigner = null;
     writeContract = null;
-    document.getElementById('walletBtnText').innerText = "Kết Nối MetaMask";
-    document.getElementById('userWalletDisplay').innerText = "Chưa kết nối";
+    document.getElementById('walletBtnText').innerText = "Liên Kết Ví MetaMask";
+    document.getElementById('userWalletDisplay').innerText = "Chưa liên kết";
     document.getElementById('userBalanceDisplay').innerText = "0.0000 ETH";
 }
 
@@ -198,7 +198,7 @@ async function updateWalletBalance() {
 async function handleCheckDuplicate() {
     const maHD = document.getElementById('inputMaHD').value.trim();
     if (!maHD) {
-        showToast("Thông Báo", "Vui lòng nhập Mã Hóa Đơn cần kiểm tra trước!", "warning");
+        showToast("Thông Báo", "Vui lòng nhập Mã Số Hóa Đơn cần kiểm tra!", "warning");
         return;
     }
 
@@ -207,9 +207,9 @@ async function handleCheckDuplicate() {
         const daTonTai = await contract.kiemTraTrungLap(maHD);
         
         if (daTonTai) {
-            showToast("🚨 CẢNH BÁO GIAN LẬN", `Mã hóa đơn [${maHD}] ĐÃ TỒN TẠI trên Blockchain! Giao dịch sẽ bị REVERT nếu cố tình gửi.`, "danger");
+            showToast("🚨 CẢNH BÁO TRÙNG LẶP", `Mã hóa đơn [${maHD}] ĐÃ TỒN TẠI trên Blockchain! Giao dịch sẽ bị Revert nếu gửi.`, "danger");
         } else {
-            showToast("✅ MÃ HỢP LỆ", `Mã hóa đơn [${maHD}] chưa từng tồn tại trên Blockchain. Hoàn toàn sẵn sàng phát hành!`, "success");
+            showToast("✅ MÃ HỢP LỆ", `Mã hóa đơn [${maHD}] chưa từng tồn tại trên Blockchain. Sẵn sàng phát hành!`, "success");
         }
     } catch (err) {
         console.error("Lỗi kiểm tra trùng lặp:", err);
@@ -220,7 +220,7 @@ async function handleCheckDuplicate() {
 // Xử lý Phát Hành Hóa Đơn Lên Blockchain
 async function handleIssueInvoice() {
     if (!writeContract || !userSigner) {
-        showToast("Chưa Kết Nối Ví", "Vui lòng bấm 'Kết Nối MetaMask' ở góc trên trước khi ký phát hành!", "warning");
+        showToast("Chưa Kết Nối Ví", "Vui lòng bấm 'Liên Kết Ví MetaMask' ở góc trên để ký phát hành!", "warning");
         await connectWallet();
         return;
     }
@@ -231,29 +231,29 @@ async function handleIssueInvoice() {
     const resultBox = document.getElementById('issueResultBox');
 
     if (!maHD) {
-        showToast("Thiếu Dữ Liệu", "Vui lòng nhập Mã Hóa Đơn!", "warning");
+        showToast("Thiếu Dữ Liệu", "Vui lòng nhập Mã Số Hóa Đơn!", "warning");
         return;
     }
     if (!ethers.isAddress(nguoiMua)) {
-        showToast("Địa Chỉ Không Hợp Lệ", "Địa chỉ ví người mua phải là địa chỉ EVM hợp lệ (0x...)!", "danger");
+        showToast("Địa Chỉ Không Hợp Lệ", "Địa chỉ ví khách hàng phải là địa chỉ EVM hợp lệ (bắt đầu bằng 0x)!", "danger");
         return;
     }
     if (!giaTri || Number(giaTri) <= 0) {
-        showToast("Giá Trị Không Hợp Lệ", "Giá trị thanh toán phải lớn hơn 0 VNĐ!", "danger");
+        showToast("Giá Trị Không Hợp Lệ", "Tổng tiền thanh toán phải lớn hơn 0 VNĐ!", "danger");
         return;
     }
 
     const btnSubmit = document.getElementById('btnSubmitInvoice');
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<span class="pulse-radar" style="display:inline-block; margin-right:8px;"></span> Đang Xử Lý Giao Dịch...`;
+    btnSubmit.innerHTML = `<span class="live-dot" style="display:inline-block; margin-right:6px;"></span> Đang Xử Lý Chữ Ký Số...`;
 
     resultBox.style.display = "block";
     resultBox.innerHTML = `
         <div class="alert alert-info">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <div>
-                <strong>Bước 1/3: Ký duyệt trên ví MetaMask</strong><br>
-                Vui lòng xác nhận giao dịch trên cửa sổ MetaMask đang bật lên...
+                <strong>Bước 1/3: Ký duyệt trên ví MetaMask doanh nghiệp</strong><br>
+                Vui lòng xác nhận giao dịch trên cửa sổ MetaMask đang hiển thị...
             </div>
         </div>
         <div class="tx-stepper">
@@ -275,12 +275,12 @@ async function handleIssueInvoice() {
         
         resultBox.innerHTML = `
             <div class="alert alert-warning">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 <div>
                     <strong>Bước 2/3: Giao dịch đã phát sóng lên mạng Sepolia!</strong><br>
                     Mã TxHash: <a href="${CONTRACT_CONFIG.blockExplorerUrl}/tx/${tx.hash}" target="_blank" class="addr-link">${shortenAddress(tx.hash)} ↗</a>
                     <button class="copy-btn" onclick="copyText('${tx.hash}', 'Mã TxHash')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button><br>
-                    Đang chờ các thợ đào Sepolia xác nhận và đóng gói vào khối tiếp theo...
+                    Đang chờ các nút mạng Sepolia kiểm định và đóng gói vào khối...
                 </div>
             </div>
             <div class="tx-stepper">
@@ -295,7 +295,7 @@ async function handleIssueInvoice() {
 
         resultBox.innerHTML = `
             <div class="alert alert-success">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
@@ -304,7 +304,7 @@ async function handleIssueInvoice() {
                     • Mã Hóa Đơn: <strong>${maHD}</strong><br>
                     • Block Number: <span class="font-mono">#${receipt.blockNumber}</span><br>
                     • Gas Tiêu Thụ: <span class="font-mono">${receipt.gasUsed.toString()} Units</span><br>
-                    • TxHash: <a href="${CONTRACT_CONFIG.blockExplorerUrl}/tx/${receipt.hash}" target="_blank" class="addr-link" style="color: #34d399; font-weight: bold;">${shortenAddress(receipt.hash)} ↗</a>
+                    • TxHash: <a href="${CONTRACT_CONFIG.blockExplorerUrl}/tx/${receipt.hash}" target="_blank" class="addr-link" style="color: #059669; font-weight: bold;">${shortenAddress(receipt.hash)} ↗</a>
                     <button class="copy-btn" onclick="copyText('${receipt.hash}', 'Mã giao dịch')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
                 </div>
             </div>
@@ -331,7 +331,7 @@ async function handleIssueInvoice() {
 
         resultBox.innerHTML = `
             <div class="alert alert-danger">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -347,21 +347,21 @@ async function handleIssueInvoice() {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
             </svg>
-            Ký Duyệt & Phát Hành Lên Sepolia Blockchain
+            Ký Số & Phát Hành Lên Sepolia Blockchain
         `;
     }
 }
 
-// Xử lý Tra Cứu Đối Soát Hóa Đơn & Xuất Chứng Thư Số
+// Xử lý Tra Cứu Đối Soát & Xuất Phiếu Hóa Đơn GTGT Điện Tử Chuẩn
 async function handleLookupInvoice() {
     const maHD = document.getElementById('inputLookupMaHD').value.trim();
     const resultBox = document.getElementById('lookupResultBox');
 
     if (!maHD) {
-        showToast("Thông Báo", "Vui lòng nhập Mã Hóa Đơn cần tra cứu!", "warning");
+        showToast("Thông Báo", "Vui lòng nhập Mã Số Hóa Đơn cần tra cứu!", "warning");
         return;
     }
 
@@ -372,7 +372,7 @@ async function handleLookupInvoice() {
         if (!daTonTai) {
             resultBox.innerHTML = `
                 <div class="alert alert-danger">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="8" x2="12" y2="12"></line>
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -380,7 +380,7 @@ async function handleLookupInvoice() {
                     <div>
                         <strong>CẢNH BÁO GIAN LẬN / KHÔNG TỒN TẠI TRÊN BLOCKCHAIN:</strong><br>
                         Hóa đơn <strong>"${maHD}"</strong> không có bản ghi nào trên Ethereum Sepolia.<br>
-                        <em>Khuyến cáo: Hóa đơn này không có giá trị khấu trừ thuế hoặc có dấu hiệu làm giả ngoài sổ cái.</em>
+                        <em>Hóa đơn này không có giá trị khấu trừ thuế hoặc có dấu hiệu làm giả ngoài sổ cái.</em>
                     </div>
                 </div>
             `;
@@ -396,57 +396,94 @@ async function handleLookupInvoice() {
         const giaTriFormatted = Number(giaTri).toLocaleString('vi-VN');
 
         resultBox.innerHTML = `
-            <div class="invoice-certificate">
-                <!-- Watermark SVG Icon chìm -->
-                <svg class="cert-watermark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="m9 12 2 2 4-4"></path>
-                </svg>
-
-                <div class="cert-header">
-                    <div>
-                        <div style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">
-                            CHỨNG THƯ ĐIỆN TỬ BLOCKCHAIN
-                        </div>
-                        <h3 class="font-display" style="font-size: 1.25rem; color: #fff; margin-top: 2px;">#${maHoaDon}</h3>
+            <div class="vat-invoice-paper">
+                <!-- Tiêu đề chuẩn hóa đơn GTGT điện tử -->
+                <div class="invoice-official-header">
+                    <div class="title-main">HÓA ĐƠN GIÁ TRỊ GIA TĂNG (ĐIỆN TỬ)</div>
+                    <div class="title-sub">Bản thể hiện điện tử tra cứu từ Sổ cái Blockchain Ethereum Sepolia</div>
+                    <div style="font-size: 0.75rem; color: var(--color-blue); font-family: var(--font-mono); margin-top: 4px; font-weight: 700;">
+                        Mã Số: #${maHoaDon} • Ký Hiệu: 1C26TMB
                     </div>
-                    <span class="cert-badge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        XÁC THỰC BẤT BIẾN ON-CHAIN
-                    </span>
                 </div>
 
-                <div class="cert-row">
-                    <span class="label">Đơn Vị Phát Hành (Doanh Nghiệp Bán):</span>
-                    <span class="val">
-                        <a href="${CONTRACT_CONFIG.blockExplorerUrl}/address/${nguoiBan}" target="_blank" class="addr-link">${shortenAddress(nguoiBan)} ↗</a>
-                        <button class="copy-btn" onclick="copyText('${nguoiBan}', 'Ví người bán')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
-                    </span>
+                <!-- Bảng kê đơn vị bán & mua -->
+                <div class="invoice-meta-grid">
+                    <div>
+                        <div style="font-weight: 700; color: var(--color-navy); margin-bottom: 6px; font-size: 0.82rem;">ĐƠN VỊ BÁN HÀNG:</div>
+                        <div class="meta-row">
+                            <span class="label">Địa chỉ ví:</span>
+                            <span class="val font-mono">
+                                <a href="${CONTRACT_CONFIG.blockExplorerUrl}/address/${nguoiBan}" target="_blank" class="addr-link">${shortenAddress(nguoiBan)} ↗</a>
+                                <button class="copy-btn" onclick="copyText('${nguoiBan}', 'Ví người bán')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                            </span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="label">Hình thức TT:</span>
+                            <span class="val">Chuyển khoản / Web3</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-weight: 700; color: var(--color-navy); margin-bottom: 6px; font-size: 0.82rem;">ĐƠN VỊ MUA HÀNG:</div>
+                        <div class="meta-row">
+                            <span class="label">Địa chỉ ví:</span>
+                            <span class="val font-mono">
+                                <a href="${CONTRACT_CONFIG.blockExplorerUrl}/address/${nguoiMua}" target="_blank" class="addr-link">${shortenAddress(nguoiMua)} ↗</a>
+                                <button class="copy-btn" onclick="copyText('${nguoiMua}', 'Ví người mua')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                            </span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="label">Thời điểm ghi:</span>
+                            <span class="val">${thoiGianFormatted}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="cert-row">
-                    <span class="label">Khách Hàng (Người Mua Hàng):</span>
-                    <span class="val">
-                        <a href="${CONTRACT_CONFIG.blockExplorerUrl}/address/${nguoiMua}" target="_blank" class="addr-link">${shortenAddress(nguoiMua)} ↗</a>
-                        <button class="copy-btn" onclick="copyText('${nguoiMua}', 'Ví người mua')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
-                    </span>
+                <!-- Bảng hàng hóa dịch vụ chuẩn -->
+                <table class="invoice-items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">STT</th>
+                            <th>Tên Hàng Hóa, Dịch Vụ</th>
+                            <th style="width: 60px; text-align: center;">ĐVT</th>
+                            <th style="width: 70px; text-align: center;">Số Lượng</th>
+                            <th style="text-align: right;">Thành Tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center;">1</td>
+                            <td>Dịch vụ công nghệ & giải pháp số hóa đơn điện tử bảo chứng Blockchain</td>
+                            <td style="text-align: center;">Gói</td>
+                            <td style="text-align: center;">1</td>
+                            <td style="text-align: right; font-weight: 600; font-family: var(--font-mono);">${giaTriFormatted}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Tổng thanh toán -->
+                <div class="invoice-total-section">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Tổng Tiền Thanh Toán:</div>
+                        <div style="font-size: 0.75rem; color: var(--color-navy); font-style: italic;">(Đã bao gồm thuế GTGT hợp lệ)</div>
+                    </div>
+                    <div class="invoice-total-amount font-mono">
+                        ${giaTriFormatted} VNĐ
+                    </div>
                 </div>
 
-                <div class="cert-row">
-                    <span class="label">Thời Điểm Ghi Khối (Timestamp):</span>
-                    <span class="val">${thoiGianFormatted}</span>
-                </div>
-
-                <div class="cert-row" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12);">
-                    <span class="label" style="font-size: 0.95rem; font-weight: 600; color: #fff;">Tổng Tiền Thanh Toán:</span>
-                    <span class="val cert-amount">${giaTriFormatted} VNĐ</span>
-                </div>
-
-                <div style="margin-top: 18px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.76rem; color: #34d399; display: flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                    Chứng thực điện tử: Dữ liệu được bảo chứng bởi mạng phi tập trung Ethereum Sepolia, chống tẩy xóa, chống sửa ngày giờ và chống gian lận thuế 100%.
+                <!-- Dấu Mộc Điện Tử Ký Số Blockchain (Digital Seal) -->
+                <div class="digital-stamp">
+                    <div class="stamp-seal">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <polyline points="9 12 11 14 15 10"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stamp-text">
+                        <strong>ĐÃ KÝ SỐ VÀ BẢO CHỨNG BLOCKCHAIN</strong>
+                        Bảo mật: Xác thực tự động bởi Smart Contract Sepolia • Không thể sửa đổi • Chống xuất khống 100%.
+                    </div>
                 </div>
             </div>
         `;
@@ -482,7 +519,7 @@ async function loadBlockchainLedger() {
                 <tr>
                     <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">
                         Chưa có hóa đơn nào được phát hành trên Smart Contract này.<br>
-                        <span style="font-size: 0.8rem; color: var(--text-dim);">Hãy dùng biểu mẫu bên trên để phát hành hóa đơn đầu tiên vào sổ cái!</span>
+                        <span style="font-size: 0.78rem; color: var(--text-dim);">Hãy dùng biểu mẫu bên trên để phát hành hóa đơn đầu tiên vào sổ cái!</span>
                     </td>
                 </tr>
             `;
@@ -492,8 +529,8 @@ async function loadBlockchainLedger() {
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: var(--accent-cyan); padding: 28px;">
-                    <span class="pulse-radar" style="display:inline-block; margin-right:8px;"></span>
+                <td colspan="7" style="text-align: center; color: var(--color-blue); padding: 28px;">
+                    <span class="live-dot" style="display:inline-block; margin-right:6px;"></span>
                     Đang đồng bộ ${danhSachMa.length} hóa đơn từ các khối Sepolia...
                 </td>
             </tr>
@@ -525,7 +562,7 @@ async function loadBlockchainLedger() {
         console.error("Lỗi tải sổ cái:", err);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: var(--accent-rose); padding: 32px;">
+                <td colspan="7" style="text-align: center; color: var(--color-rose); padding: 32px;">
                     Lỗi kết nối RPC Sepolia: ${err.message || 'Không thể đồng bộ sổ cái'}.<br>
                     <button class="btn btn-outline btn-sm" style="margin-top: 10px;" onclick="loadBlockchainLedger()">Thử Lại</button>
                 </td>
@@ -560,8 +597,8 @@ function renderLedgerTable(list) {
 
         return `
             <tr>
-                <td style="color: var(--text-dim); font-weight: 700; font-family: var(--font-mono);">#${item.index}</td>
-                <td style="font-weight: 700; color: #fff; font-family: var(--font-mono);">
+                <td style="color: var(--text-muted); font-weight: 700; font-family: var(--font-mono); text-align: center;">#${item.index}</td>
+                <td style="font-weight: 700; color: var(--color-navy); font-family: var(--font-mono);">
                     ${item.maHoaDon}
                     <button class="copy-btn" onclick="copyText('${item.maHoaDon}', 'Mã hóa đơn')" title="Sao chép">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -577,13 +614,12 @@ function renderLedgerTable(list) {
                         ${shortenAddress(item.nguoiMua)} ↗
                     </a>
                 </td>
-                <td style="font-weight: 700; color: var(--accent-emerald); font-family: var(--font-mono);">
+                <td style="font-weight: 700; color: var(--color-emerald); font-family: var(--font-mono);">
                     ${item.giaTri.toLocaleString('vi-VN')} VNĐ
                 </td>
-                <td style="color: var(--text-muted); font-size: 0.8rem;">${timeStr}</td>
+                <td style="color: var(--text-muted); font-size: 0.78rem;">${timeStr}</td>
                 <td style="text-align: center;">
                     <button class="btn btn-outline btn-sm" onclick="quickLookup('${item.maHoaDon}')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         Đối Soát
                     </button>
                 </td>
@@ -645,7 +681,7 @@ function shortenAddress(addr) {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
 }
 
-// Toast thông báo hiện đại
+// Toast thông báo Clean Light Mode
 function showToast(title, desc, type = "info") {
     const container = document.getElementById('toastContainer');
     if (!container) return;
@@ -653,15 +689,14 @@ function showToast(title, desc, type = "info") {
     const toast = document.createElement('div');
     toast.className = 'toast';
 
-    let color = "var(--accent-cyan)";
-    if (type === "success") color = "var(--accent-emerald)";
-    if (type === "danger") color = "var(--accent-rose)";
-    if (type === "warning") color = "var(--accent-amber)";
+    let color = "var(--color-blue)";
+    if (type === "success") color = "var(--color-emerald)";
+    if (type === "danger") color = "var(--color-rose)";
+    if (type === "warning") color = "var(--color-amber)";
 
-    toast.style.borderColor = color;
+    toast.style.borderLeft = `4px solid ${color}`;
 
     toast.innerHTML = `
-        <div style="width: 10px; height: 10px; border-radius: 50%; background: ${color}; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 10px ${color};"></div>
         <div style="flex: 1;">
             <div class="toast-title" style="color: ${color};">${title}</div>
             <div class="toast-desc">${desc}</div>
@@ -673,7 +708,7 @@ function showToast(title, desc, type = "info") {
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.35s ease';
-        setTimeout(() => toast.remove(), 350);
-    }, 5000);
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+    }, 4500);
 }
