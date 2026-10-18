@@ -31,3 +31,6 @@ docs/*.docx
 docs/*.pdf
 slides/
 slides/**
+
+# Agent rules
+AGENTS.md
