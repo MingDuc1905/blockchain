@@ -22,3 +22,12 @@ Thumbs.db
 *.bak
 ~$*.docx
 ~$*.pptx
+
+# Document and Slide Binaries (excluded from repo per user request)
+*.docx
+*.pptx
+*.pdf
+docs/*.docx
+docs/*.pdf
+slides/
+slides/**
