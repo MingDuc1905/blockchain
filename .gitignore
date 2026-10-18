@@ -1,0 +1,24 @@
+# Python & Jupyter
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*.venv/
+env/
+venv/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.agents/
+.agents/**
+.claude/
+.claude/**
+
+# Temp files
+*.tmp
+*.bak
+~$*.docx
+~$*.pptx

@@ -1,0 +1,39 @@
+THÔNG BÁO VỀ BÁO CÁO TIẾN ĐỘ ĐỒ ÁN GIỮA KỲ
+Mỗi nhóm chuẩn bị và thực hiện đầy đủ các yêu cầu sau
+
+A. THỜI GIAN 20102026
+
+B. HỒ SƠ CẦN NỘP File báo cáo đồ án và file PowerPoint của nhóm. Tên file được đặt theo cú pháp STTđề tài_MSSV1_MSSV2_MSSV3.
+
+C. YÊU CẦU ĐỐI VỚI BÀI THUYẾT TRÌNH Bài trình bày tối đa 10 slide; thời lượng dự kiến từ 10 đến 15 phút cho mỗi nhóm. Nội dung cần bao gồm
+
+1. TIẾN ĐỘ THỰC HIỆN BÁO CÁO ĐỒ ÁN
+
+(1).    Trình bày các nội dung đã hoàn thành.
+
+(2).    Tự đánh giá báo cáo theo các tiêu chí sau
+
+Hình thức trình bày.
+Mức độ đáp ứng các mục theo mẫu quy định.
+Chất lượng nội dung.
+Những hạn chế, vấn đề còn tồn tại và hướng khắc phục.
+2. TIẾN ĐỘ XÂY DỰNG ỨNG DỤNG DEMO
+
+(1).    Trình bày bản phác thảo các chức năng của ứng dụng.
+
+(2).    Trình bày các nội dung và chức năng đã lập trình.
+
+(3).    Đánh giá tình trạng ứng dụng theo các tiêu chí sau
+
+Các chức năng đã chạy được.
+Các chức năng chưa hoàn thiện hoặc chưa đáp ứng yêu cầu.
+Những vấn đề cần khắc phục và các chức năng cần bổ sung.
+3. PHÂN CÔNG CÔNG VIỆC GIỮA CÁC THÀNH VIÊN
+
+(1).    Nêu rõ nhiệm vụ và nội dung công việc của từng thành viên.
+
+(2).    Báo cáo khối lượng và mức độ hoàn thành công việc.
+
+(3).    Đánh giá chất lượng phần việc đã thực hiện của từng thành viên.
+
+Lưu ý Các nhóm cần trình bày ngắn gọn, có minh chứng cụ thể và bảo đảm đúng thời lượng quy định.
