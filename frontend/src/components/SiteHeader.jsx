@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { shortenAddress } from '../utils/contract';
-import { Wallet, PanelLeft, Search } from 'lucide-react';
+import { Wallet, PanelLeft, Search } from './Icons';
 
 export default function SiteHeader({ activeTab, onToggleSidebar, onOpenCommandPalette }) {
   const { account, balance, connectWallet } = useWeb3();
@@ -57,7 +57,7 @@ export default function SiteHeader({ activeTab, onToggleSidebar, onOpenCommandPa
 
         {/* Network Badge */}
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
           Sepolia (11155111)
         </div>
 

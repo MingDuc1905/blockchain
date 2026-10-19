@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
 import { 
@@ -11,7 +11,7 @@ import {
   User, 
   ExternalLink,
   ChevronRight
-} from 'lucide-react';
+} from './Icons';
 
 
 export default function AppSidebar({ activeTab, onSelectTab }) {

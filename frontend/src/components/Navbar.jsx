@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { shortenAddress } from '../utils/contract';
-import { Shield, Wallet, Circle } from 'lucide-react';
+import { Shield, Wallet } from './Icons';
 
 export default function Navbar({ activeTab, onSelectTab }) {
   const { account, balance, connectWallet } = useWeb3();

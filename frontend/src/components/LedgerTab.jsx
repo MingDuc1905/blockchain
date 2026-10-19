@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
-import { Search, RefreshCw, Copy, ExternalLink } from 'lucide-react';
+import { Search, RefreshCw, Copy } from './Icons';
 
 export default function LedgerTab({ invoices, onRefresh, onSelectInvoice }) {
   const { showToast } = useWeb3();

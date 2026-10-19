@@ -5,10 +5,9 @@ import { readVietnameseCurrency, formatVND, computeInvoiceHash } from '../utils/
 import { 
   Send, CheckCircle2, AlertCircle, Loader2, 
   Plus, Trash2, ShieldCheck, Printer, Copy, Check 
-} from 'lucide-react';
+} from './Icons';
 import { ethers } from 'ethers';
 import InvoicePrintModal from './InvoicePrintModal';
-
 
 export default function IssueInvoiceTab({ onInvoiceIssued }) {
   const { writeContract, account, connectWallet, refreshBalance, showToast } = useWeb3();
@@ -61,7 +60,6 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
 
   const computedHash = useMemo(() => computeInvoiceHash(currentInvoiceData), [currentInvoiceData]);
 
-
   // Line item handlers
   const handleAddItem = () => {
     setItems([
@@ -99,21 +97,21 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
       return;
     }
     setCheckingDuplicate(true);
-    setIsDuplicate(null);
     try {
       if (!writeContract) {
-        showToast('Chưa Kết Nối Ví', 'Vui lòng kết nối MetaMask để kiểm tra!', 'warning');
+        showToast('Chưa Sẵn Sàng', 'Đang kết nối Smart Contract Sepolia...', 'warning');
         return;
       }
-      const daTonTai = await writeContract.kiemTraTrungLap(maHD.trim());
-      setIsDuplicate(daTonTai);
-      if (daTonTai) {
-        showToast('🚨 CẢNH BÁO TRÙNG LẶP', `Mã hóa đơn [${maHD}] ĐÃ TỒN TẠI trên Blockchain!`, 'danger');
+      const daCo = await writeContract.kiemTraTrungLap(maHD.trim());
+      setIsDuplicate(daCo);
+      if (daCo) {
+        showToast('Cảnh Báo Trùng', `Mã "${maHD.trim()}" ĐÃ TỒN TẠI trên Blockchain!`, 'danger');
       } else {
-        showToast('✅ MÃ HỢP LỆ', `Mã [${maHD}] chưa từng tồn tại. Sẵn sàng phát hành!`, 'success');
+        showToast('Hợp Lệ', `Mã "${maHD.trim()}" CHƯA TỒN TẠI, có thể phát hành.`, 'success');
       }
     } catch (err) {
-      showToast('Lỗi Kiểm Tra', err.message, 'danger');
+      console.error(err);
+      showToast('Lỗi', 'Không kiểm tra được mã: ' + err.message, 'danger');
     } finally {
       setCheckingDuplicate(false);
     }
@@ -124,71 +122,85 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
     setErrorMsg(null);
     setTxResult(null);
 
-    if (!account || !writeContract) {
-      showToast('Chưa Kết Nối Ví', 'Vui lòng bấm kết nối MetaMask trước!', 'warning');
+    if (!account) {
+      showToast('Yêu Cầu Kết Nối', 'Vui lòng kết nối ví MetaMask trước khi phát hành!', 'warning');
       await connectWallet();
       return;
     }
 
     if (!maHD.trim()) {
-      showToast('Thiếu Thông Tin', 'Vui lòng nhập mã số hóa đơn!', 'warning');
+      showToast('Thiếu Thông Tin', 'Mã hóa đơn không được để trống!', 'warning');
       return;
     }
 
     if (!ethers.isAddress(nguoiMua.trim())) {
-      showToast('Địa Chỉ Sai Định Dạng', 'Địa chỉ ví bên mua phải là địa chỉ EVM hợp lệ (0x...)!', 'danger');
+      showToast('Địa Chỉ Sai', 'Địa chỉ ví người mua không hợp lệ!', 'danger');
       return;
     }
 
     if (finalTotal <= 0) {
-      showToast('Giá Trị Sai', 'Tổng tiền thanh toán phải lớn hơn 0 VNĐ!', 'danger');
+      showToast('Giá Trị Sai', 'Tổng tiền hóa đơn phải lớn hơn 0!', 'danger');
       return;
     }
 
     setLoading(true);
-    setStep(1); // Bước 1: Ký MetaMask
+    setStep(1);
 
     try {
-      // 1. Kiểm tra trùng mã trước khi gửi tx
-      const daTonTai = await writeContract.kiemTraTrungLap(maHD.trim());
-      if (daTonTai) {
+      const isDup = await writeContract.kiemTraTrungLap(maHD.trim());
+      if (isDup) {
         setIsDuplicate(true);
-        throw new Error(`PHÁT HIỆN GIAN LẬN: Mã hóa đơn "${maHD}" đã tồn tại trên sổ cái blockchain! Hợp đồng sẽ revert để chống xuất khống.`);
+        throw new Error(`Mã hóa đơn "${maHD.trim()}" đã tồn tại trên Blockchain! EVM kích hoạt Revert từ chối giao dịch.`);
       }
 
-      // 2. Ký giao dịch on-chain
-      const tx = await writeContract.phatHanhHoaDon(maHD.trim(), nguoiMua.trim(), BigInt(finalTotal));
-      setStep(2); // Bước 2: Mempool
+      showToast('Ký Ví', 'Vui lòng xác nhận giao dịch trên ví MetaMask...', 'info');
+      const tx = await writeContract.phatHanhHoaDon(
+        maHD.trim(),
+        nguoiMua.trim(),
+        BigInt(finalTotal)
+      );
 
-      // 3. Chờ đóng khối
-      const receipt = await tx.wait(1);
-      setStep(3); // Bước 3: Hoàn tất
+      setStep(2);
+      showToast('Đang Mining', `Giao dịch đã vào Mempool: ${shortenAddress(tx.hash)}. Đang chờ đóng khối...`, 'info');
 
-      const resultPayload = {
+      const receipt = await tx.wait();
+      setStep(3);
+
+      const resultObj = {
+        hash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        gasUsed: receipt.gasUsed.toString(),
         maHD: maHD.trim(),
+        giaTri: finalTotal,
+        thoiGian: Math.floor(Date.now() / 1000)
+      };
+
+      setTxResult(resultObj);
+      setCreatedInvoiceData({
         maHoaDon: maHD.trim(),
         nguoiBan: account,
         nguoiMua: nguoiMua.trim(),
         giaTri: finalTotal,
         thoiGian: Math.floor(Date.now() / 1000),
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed.toString(),
-        hash: receipt.hash,
+        tenNguoiMua,
+        mstNguoiMua,
         items
-      };
+      });
 
-      setTxResult(resultPayload);
-      setCreatedInvoiceData(resultPayload);
+      showToast('Thành Công', `Hóa đơn ${maHD.trim()} đã được ghi nhận vĩnh viễn vào Block #${receipt.blockNumber}!`, 'success');
+      refreshBalance();
 
-      showToast('Thành Công On-Chain', `Hóa đơn [${maHD}] đã được đóng vào khối #${receipt.blockNumber}!`, 'success');
-
-      await refreshBalance();
-      if (onInvoiceIssued) onInvoiceIssued();
+      if (onInvoiceIssued) {
+        onInvoiceIssued();
+      }
 
     } catch (err) {
       console.error('Lỗi phát hành:', err);
-      let msg = err.reason || err.message || 'Giao dịch bị từ chối.';
-      if (err.data && err.data.message) msg = err.data.message;
+      let msg = err.reason || err.message || 'Giao dịch bị từ chối';
+      if (msg.includes('Loi: Ma hoa don da ton tai tren he thong!')) {
+        msg = 'Hợp đồng từ chối: Mã hóa đơn này đã tồn tại trên sổ cái blockchain!';
+        setIsDuplicate(true);
+      }
       setErrorMsg(msg);
       showToast('Thất Bại', msg, 'danger');
     } finally {
@@ -204,13 +216,13 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Main Form Container */}
-      <div className="bg-white border border-zinc-200/90 rounded-xl shadow-xs overflow-hidden">
-        {/* Header (Pure white, seamless card header) */}
+      {/* Main Form Container - Flat, No wide shadow */}
+      <div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+        {/* Header - Seamless white */}
         <div className="p-5 sm:px-7 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold font-mono px-2.5 py-0.5 rounded bg-zinc-900 text-white">
+              <span className="text-xs font-semibold font-mono px-2 py-0.5 rounded bg-zinc-900 text-white">
                 1C26TAA
               </span>
               <h3 className="font-semibold text-base text-zinc-950">
@@ -223,14 +235,14 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            <span className="text-xs font-mono font-medium text-zinc-700 bg-zinc-100 border border-zinc-300 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
               EVM Smart Contract
             </span>
           </div>
         </div>
 
-        {/* Form Body */}
+        {/* Form Body - 100% Flat Structure */}
         <form onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-6">
           {/* Section 1: Thông tin định danh hóa đơn */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b border-zinc-100">
@@ -264,7 +276,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
                   Mã số hóa đơn (*)
                 </label>
                 {isDuplicate === false && (
-                  <span className="text-xs text-emerald-700 font-medium">✓ Mã hợp lệ</span>
+                  <span className="text-xs text-zinc-800 font-medium">✓ Mã hợp lệ</span>
                 )}
                 {isDuplicate === true && (
                   <span className="text-xs text-red-700 font-medium">✗ Đã tồn tại</span>
@@ -298,7 +310,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
             </div>
           </div>
 
-          {/* Section 2: Bên Bán & Bên Mua (Flat structure, no nested cards) */}
+          {/* Section 2: Bên Bán & Bên Mua - Flat structure, No nested cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-zinc-100">
             {/* Seller */}
             <div className="space-y-3">
@@ -320,9 +332,9 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Địa chỉ ví ký phát hành (msg.sender)
                 </label>
-                <code className="block text-xs font-mono bg-zinc-50 p-2.5 rounded border border-zinc-200 text-zinc-800 truncate">
+                <div className="text-xs font-mono text-zinc-800 py-1.5 border-b border-zinc-200 truncate">
                   {account ? account : 'Chưa kết nối ví MetaMask'}
-                </code>
+                </div>
               </div>
             </div>
 
@@ -466,7 +478,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
               </table>
             </div>
 
-            {/* Calculations & Tax Rate (Flat layout, no nested card) */}
+            {/* Calculations & Tax Rate - Flat layout, no nested card */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-zinc-800">Thuế suất GTGT:</span>
@@ -495,27 +507,27 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
                 </div>
                 <div className="flex justify-between sm:justify-end gap-6 text-zinc-600">
                   <span>Tiền thuế GTGT ({vatRate}%):</span>
-                  <span className="font-mono tabular-nums text-emerald-800 font-semibold">{formatVND(taxAmount)}</span>
+                  <span className="font-mono tabular-nums text-zinc-900 font-semibold">{formatVND(taxAmount)}</span>
                 </div>
                 <div className="flex justify-between sm:justify-end gap-6 text-zinc-950 font-bold text-sm pt-1 border-t border-zinc-200">
                   <span>Tổng tiền thanh toán:</span>
-                  <span className="font-mono tabular-nums text-emerald-800 text-base">{formatVND(finalTotal)}</span>
+                  <span className="font-mono tabular-nums text-zinc-950 text-base">{formatVND(finalTotal)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Số tiền viết bằng chữ (Flat text) */}
+            {/* Số tiền viết bằng chữ */}
             <div className="text-xs text-zinc-800 italic pt-1">
               <strong className="not-italic text-zinc-950 font-semibold">Số tiền viết bằng chữ:</strong>{' '}
               {readVietnameseCurrency(finalTotal)}
             </div>
           </div>
 
-          {/* Section 4: Cryptographic Seal & Hash (Flat layout, no nested card) */}
+          {/* Section 4: Cryptographic Seal & Hash - Flat layout */}
           <div className="space-y-2 pt-2 pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <ShieldCheck className="w-4 h-4 text-zinc-800" />
                 <span className="text-xs font-semibold text-zinc-950">
                   Mã băm niêm phong hóa đơn (Keccak-256)
                 </span>
@@ -525,7 +537,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
                 onClick={handleCopyHash}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-950 cursor-pointer"
               >
-                {copiedHash ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedHash ? <Check className="w-3.5 h-3.5 text-zinc-900" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedHash ? 'Đã sao chép' : 'Sao chép hash'}</span>
               </button>
             </div>
@@ -539,7 +551,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
             <button 
               type="submit" 
               disabled={loading || isDuplicate === true}
-              className="w-full h-11 inline-flex items-center justify-center gap-2 text-sm font-semibold rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 transition-all btn-tactile cursor-pointer shadow-xs"
+              className="w-full h-11 inline-flex items-center justify-center gap-2 text-sm font-semibold rounded-md bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 transition-all btn-tactile cursor-pointer shadow-xs"
             >
               {loading ? (
                 <>
@@ -556,7 +568,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
           </div>
         </form>
 
-        {/* Stepper Feedback (Flat layout, no nested card) */}
+        {/* Stepper Feedback - Flat layout */}
         {loading && (
           <div className="mx-6 sm:mx-7 mb-6 pt-4 border-t border-zinc-200">
             <div className="flex justify-between text-xs font-medium">
@@ -566,27 +578,27 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
               <span className={step >= 2 ? 'text-zinc-950 font-bold' : 'text-zinc-500'}>
                 {step > 2 ? '✓ 2. P2P Broadcast' : '● 2. Sepolia Mempool'}
               </span>
-              <span className={step >= 3 ? 'text-emerald-700 font-bold' : 'text-zinc-500'}>
+              <span className={step >= 3 ? 'text-zinc-950 font-bold' : 'text-zinc-500'}>
                 {step === 3 ? '✓ 3. Đã Chốt Khối Block' : '○ 3. Đóng Gói Mining'}
               </span>
             </div>
           </div>
         )}
 
-        {/* Success Box */}
+        {/* Success Box - Flat Alert, No Nested Cards */}
         {txResult && (
-          <div className="m-6 p-5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-950 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="m-6 p-4 bg-zinc-50 border border-zinc-300 rounded-md text-xs text-zinc-950 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex gap-3 items-start">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-zinc-900 shrink-0 mt-0.5" />
               <div>
-                <strong className="block font-bold text-base text-emerald-900">
+                <strong className="block font-bold text-sm text-zinc-950">
                   Hóa Đơn Đã Được Đóng Khối Bất Biến!
                 </strong>
-                <div className="text-xs text-emerald-800 space-y-1 mt-1 font-mono">
+                <div className="text-xs text-zinc-700 space-y-0.5 mt-1 font-mono">
                   <div>• Mã Hóa Đơn: <strong>{txResult.maHD}</strong></div>
                   <div>• Block Mined: #{txResult.blockNumber} (Gas: {txResult.gasUsed} Units)</div>
                   <div>
-                    • Etherscan: <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/tx/${txResult.hash}`} target="_blank" rel="noreferrer" className="underline font-bold text-emerald-700">
+                    • Etherscan: <a href={`${CONTRACT_CONFIG.blockExplorerUrl}/tx/${txResult.hash}`} target="_blank" rel="noreferrer" className="underline font-bold text-zinc-950">
                       {shortenAddress(txResult.hash)} ↗
                     </a>
                   </div>
@@ -597,9 +609,9 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
             <button
               type="button"
               onClick={() => setShowPrintModal(true)}
-              className="inline-flex items-center gap-2 h-9 px-4 text-xs font-semibold rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer shadow-xs shrink-0"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 text-xs font-semibold rounded-md bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer shadow-2xs shrink-0"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-3.5 h-3.5" />
               <span>Xem & In Hóa Đơn A4</span>
             </button>
           </div>
@@ -607,8 +619,8 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
 
         {/* Error Box */}
         {errorMsg && (
-          <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-900 flex gap-3 items-start">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-md text-xs text-red-900 flex gap-3 items-start">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
             <div>
               <strong className="block font-semibold">GIAO DỊCH BỊ REVERT / TỪ CHỐI:</strong>
               <p className="text-xs text-red-800 mt-1 leading-relaxed">{errorMsg}</p>

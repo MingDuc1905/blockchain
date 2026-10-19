@@ -9,6 +9,7 @@ import LookupTab from './components/LookupTab';
 import DataTable from './components/DataTable';
 import CommandPalette from './components/CommandPalette';
 import InvoicePrintModal from './components/InvoicePrintModal';
+import { Search, Plus } from './components/Icons';
 
 function DashboardApp() {
   const { readContract, latestBlock, fetchBlockNumber, toast } = useWeb3();
@@ -102,15 +103,17 @@ function DashboardApp() {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setIsCommandOpen(true)}
-                className="h-8 px-3 text-xs font-medium rounded-md border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors shadow-2xs btn-tactile cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-md border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 transition-colors shadow-2xs btn-tactile cursor-pointer"
               >
-                🔍 Tìm Kiếm (Ctrl K)
+                <Search className="w-3.5 h-3.5 text-zinc-600" />
+                <span>Tìm Kiếm (Ctrl K)</span>
               </button>
               <button 
                 onClick={() => setActiveTab('issue')}
-                className="h-8 px-3 text-xs font-semibold rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs btn-tactile cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-semibold rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs btn-tactile cursor-pointer"
               >
-                ➕ Lập Hóa Đơn Mới
+                <Plus className="w-3.5 h-3.5 text-white" />
+                <span>Lập Hóa Đơn Mới</span>
               </button>
             </div>
           </div>

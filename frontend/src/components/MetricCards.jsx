@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
-import { FileText, Cpu, User, Flame, Copy } from 'lucide-react';
+import { FileText, Cpu, User, Flame, Copy } from './Icons';
 
 export default function MetricCards({ totalInvoices }) {
   const { account, balance, showToast } = useWeb3();

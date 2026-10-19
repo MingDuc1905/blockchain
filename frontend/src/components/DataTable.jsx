@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
 import { formatVND } from '../utils/taxHelper';
-import { Search, RefreshCw, Copy, Printer, ExternalLink } from 'lucide-react';
-
+import { Search, RefreshCw, Copy, Printer, ExternalLink } from './Icons';
 import InvoicePrintModal from './InvoicePrintModal';
 
 export default function DataTable({ invoices, loading, onRefresh, onSelectInvoice }) {
@@ -23,13 +22,13 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
   );
 
   return (
-    <div className="bg-white border border-zinc-200/90 rounded-xl shadow-xs overflow-hidden">
-      {/* Header bar (Seamless white, no nested card) */}
+    <div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+      {/* Header bar - Seamless white */}
       <div className="p-4 sm:p-5 border-b border-zinc-100 flex justify-between items-center flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-base text-zinc-950">Sổ Cái Hóa Đơn Điện Tử On-Chain</h3>
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-800 border border-zinc-300 font-medium">
               Sepolia Testnet
             </span>
           </div>
@@ -38,17 +37,17 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
         <button 
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium border border-zinc-200 rounded-md bg-white hover:bg-zinc-50 disabled:opacity-50 transition-colors cursor-pointer shadow-2xs btn-tactile"
+          className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium border border-zinc-300 rounded-md bg-white hover:bg-zinc-50 disabled:opacity-50 transition-colors cursor-pointer btn-tactile shadow-2xs"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-zinc-500' : 'text-zinc-600'}`} />
           <span>{loading ? 'Đang Đọc Khối...' : 'Đồng Bộ Sổ Cái'}</span>
         </button>
       </div>
 
-      {/* Filter search bar (Seamless white, no nested card) */}
+      {/* Filter search bar - Seamless white */}
       <div className="p-3.5 border-b border-zinc-100 flex justify-between items-center gap-4 flex-wrap">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
             value={filterQuery}
@@ -78,7 +77,6 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
           </thead>
           <tbody className="divide-y divide-zinc-200/70">
             {loading ? (
-              // Anti-AI Slop: Hiển thị Skeleton Shimmer Rows
               [1, 2, 3, 4, 5].map((n) => (
                 <tr key={n} className="animate-pulse">
                   <td className="py-4 px-4 text-center"><div className="h-4 w-6 bg-zinc-200 rounded mx-auto" /></td>
@@ -121,7 +119,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                         href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${item.nguoiBan}`} 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="text-zinc-900 hover:text-emerald-700 underline inline-flex items-center gap-1"
+                        className="text-zinc-900 hover:text-zinc-950 underline inline-flex items-center gap-1"
                         title={item.nguoiBan}
                       >
                         {shortenAddress(item.nguoiBan)} <ExternalLink className="w-2.5 h-2.5 opacity-60" />
@@ -132,7 +130,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                         href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${item.nguoiMua}`} 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="text-zinc-900 hover:text-emerald-700 underline inline-flex items-center gap-1"
+                        className="text-zinc-900 hover:text-zinc-950 underline inline-flex items-center gap-1"
                         title={item.nguoiMua}
                       >
                         {shortenAddress(item.nguoiMua)} <ExternalLink className="w-2.5 h-2.5 opacity-60" />
@@ -155,7 +153,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                         </button>
                         <button 
                           onClick={() => setSelectedInvoiceForPrint(item)}
-                          className="h-7 px-2.5 text-xs font-medium border border-zinc-300 bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 rounded transition-colors cursor-pointer inline-flex items-center gap-1 text-zinc-800"
+                          className="h-7 px-2.5 text-xs font-medium border border-zinc-300 bg-white hover:bg-zinc-100 hover:text-zinc-950 rounded transition-colors cursor-pointer inline-flex items-center gap-1 text-zinc-800"
                           title="Xem bản thể hiện A4 & In"
                         >
                           <Printer className="w-3.5 h-3.5" />
