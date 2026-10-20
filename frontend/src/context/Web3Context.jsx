@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
 
@@ -52,10 +52,10 @@ export function Web3Provider({ children }) {
     }
   }, []);
 
-  const showToast = (title, message, type = 'info') => {
+  const showToast = useCallback((title, message, type = 'info') => {
     setToast({ title, message, type });
     setTimeout(() => setToast(null), 4000);
-  };
+  }, []);
 
   const connectWallet = async () => {
     if (!window.ethereum) {

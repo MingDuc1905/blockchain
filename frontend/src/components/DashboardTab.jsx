@@ -1,7 +1,7 @@
 import React from 'react';
-import { shortenAddress } from '../utils/contract';
+import { shortenAddress, CONTRACT_CONFIG } from '../utils/contract';
 import { formatVND } from '../utils/taxHelper';
-import { ArrowRight, RefreshCw } from './Icons';
+import { ArrowRight, RefreshCw, ExternalLink } from './Icons';
 
 export default function DashboardTab({ recentInvoices, loading, onSelectTab, onQuickLookup, onRefresh }) {
   return (
@@ -127,7 +127,16 @@ export default function DashboardTab({ recentInvoices, loading, onSelectTab, onQ
                   <div key={idx} className="py-3 flex justify-between items-center hover:bg-zinc-50/80 transition-colors">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-zinc-950 font-mono">{item.maHoaDon}</span>
+                        <a
+                          href={item.txHash ? `${CONTRACT_CONFIG.blockExplorerUrl}/tx/${item.txHash}` : `${CONTRACT_CONFIG.blockExplorerUrl}/address/${CONTRACT_CONFIG.address}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-xs text-zinc-950 font-mono hover:underline inline-flex items-center gap-1 group"
+                          title="Xem giao dịch on-chain trên Sepolia Etherscan"
+                        >
+                          <span>{item.maHoaDon}</span>
+                          <ExternalLink className="w-2.5 h-2.5 text-zinc-500 group-hover:text-zinc-950" />
+                        </a>
                         <span className="text-xs bg-zinc-100 text-zinc-800 px-2 py-0.5 rounded font-mono font-medium border border-zinc-200">
                           Sepolia
                         </span>

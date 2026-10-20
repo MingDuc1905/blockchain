@@ -33,13 +33,15 @@ function DashboardApp() {
         try {
           const hd = await readContract.traCuuHoaDon(code);
           const [maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian] = hd;
+          const storedTx = localStorage.getItem('tx_' + code);
           loaded.push({
             index: i + 1,
             maHoaDon,
             nguoiBan,
             nguoiMua,
             giaTri: Number(giaTri),
-            thoiGian: Number(thoiGian)
+            thoiGian: Number(thoiGian),
+            txHash: storedTx || null
           });
         } catch (e) {
           console.warn(`Lỗi đọc ${code}:`, e);

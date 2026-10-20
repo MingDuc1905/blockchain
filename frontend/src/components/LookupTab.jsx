@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG } from '../utils/contract';
 import { formatVND, readVietnameseCurrency } from '../utils/taxHelper';
@@ -13,9 +13,10 @@ export default function LookupTab({ initialCode }) {
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const lastLookedUpCode = useRef('');
 
   const executeLookup = useCallback(async (codeToSearch) => {
-    const code = (codeToSearch || maHD).trim();
+    const code = (codeToSearch !== undefined ? codeToSearch : maHD).trim();
     if (!code) {
       showToast('Thông Báo', 'Vui lòng nhập Mã Số Hóa Đơn cần tra cứu!', 'warning');
       return;
@@ -60,11 +61,12 @@ export default function LookupTab({ initialCode }) {
   }, [maHD, readContract, showToast]);
 
   useEffect(() => {
-    if (initialCode) {
+    if (initialCode && initialCode !== lastLookedUpCode.current && readContract) {
+      lastLookedUpCode.current = initialCode;
       setMaHD(initialCode);
       executeLookup(initialCode);
     }
-  }, [initialCode, executeLookup]);
+  }, [initialCode, readContract, executeLookup]);
 
   const handleLookup = (e) => {
     if (e) e.preventDefault();

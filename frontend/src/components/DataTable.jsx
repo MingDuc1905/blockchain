@@ -72,7 +72,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
               <th className="py-3 px-4">Đơn vị mua (khách hàng)</th>
               <th className="py-3 px-4 text-right">Tổng tiền thanh toán</th>
               <th className="py-3 px-4">Thời điểm ghi khối</th>
-              <th className="py-3 px-4 text-center w-36">Thao tác</th>
+              <th className="py-3 px-4 text-center w-48">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200/70">
@@ -85,7 +85,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                   <td className="py-4 px-4"><div className="h-4 w-32 bg-zinc-200 rounded" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-24 bg-zinc-200 rounded ml-auto" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-28 bg-zinc-200 rounded" /></td>
-                  <td className="py-4 px-4 text-center"><div className="h-6 w-20 bg-zinc-200 rounded mx-auto" /></td>
+                  <td className="py-4 px-4 text-center"><div className="h-6 w-24 bg-zinc-200 rounded mx-auto" /></td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
@@ -97,6 +97,10 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
             ) : (
               filtered.map((item, idx) => {
                 const dateObj = new Date(item.thoiGian * 1000);
+                const txUrl = item.txHash 
+                  ? `${CONTRACT_CONFIG.blockExplorerUrl}/tx/${item.txHash}` 
+                  : `${CONTRACT_CONFIG.blockExplorerUrl}/address/${CONTRACT_CONFIG.address}`;
+
                 return (
                   <tr key={idx} className="hover:bg-zinc-50/70 transition-colors">
                     <td className="py-3.5 px-4 text-center font-mono text-zinc-600 font-semibold">
@@ -104,7 +108,16 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                     </td>
                     <td className="py-3.5 px-4 font-mono font-bold text-zinc-950">
                       <span className="inline-flex items-center gap-1.5">
-                        {item.maHoaDon}
+                        <a
+                          href={txUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:underline text-zinc-950 inline-flex items-center gap-1 group"
+                          title="Xem giao dịch trên Sepolia Etherscan"
+                        >
+                          <span>{item.maHoaDon}</span>
+                          <ExternalLink className="w-3 h-3 text-zinc-500 group-hover:text-zinc-950" />
+                        </a>
                         <button 
                           onClick={() => handleCopy(item.maHoaDon, 'Mã HĐ')} 
                           className="text-zinc-500 hover:text-zinc-900 p-0.5 rounded cursor-pointer transition-colors"
@@ -144,16 +157,26 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
+                        <a
+                          href={txUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-7 px-2 text-xs font-medium border border-zinc-300 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-white text-zinc-800 inline-flex items-center gap-1"
+                          title="Xem giao dịch on-chain trên Sepolia Etherscan"
+                        >
+                          <span>Giao Dịch</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                        </a>
                         <button 
                           onClick={() => onSelectInvoice(item.maHoaDon)}
-                          className="h-7 px-2.5 text-xs font-medium border border-zinc-300 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-white text-zinc-800"
+                          className="h-7 px-2 text-xs font-medium border border-zinc-300 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-white text-zinc-800"
                           title="Xem đối soát chi tiết"
                         >
                           Đối Soát
                         </button>
                         <button 
                           onClick={() => setSelectedInvoiceForPrint(item)}
-                          className="h-7 px-2.5 text-xs font-medium border border-zinc-300 bg-white hover:bg-zinc-100 hover:text-zinc-950 rounded transition-colors cursor-pointer inline-flex items-center gap-1 text-zinc-800"
+                          className="h-7 px-2 text-xs font-medium border border-zinc-300 bg-white hover:bg-zinc-100 hover:text-zinc-950 rounded transition-colors cursor-pointer inline-flex items-center gap-1 text-zinc-800"
                           title="Xem bản thể hiện A4 & In"
                         >
                           <Printer className="w-3.5 h-3.5" />

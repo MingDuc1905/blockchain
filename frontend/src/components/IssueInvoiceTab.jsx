@@ -164,6 +164,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
       showToast('Đang Mining', `Giao dịch đã vào Mempool: ${shortenAddress(tx.hash)}. Đang chờ đóng khối...`, 'info');
 
       const receipt = await tx.wait();
+      localStorage.setItem('tx_' + maHD.trim(), tx.hash);
       setStep(3);
 
       const resultObj = {

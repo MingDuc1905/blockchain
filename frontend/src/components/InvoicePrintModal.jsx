@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Printer, X, ShieldCheck, CheckCircle2, Lock } from './Icons';
+import { Printer, X, ShieldCheck, CheckCircle2, Lock, ExternalLink } from './Icons';
 import { readVietnameseCurrency, formatVND, computeInvoiceHash } from '../utils/taxHelper';
 import { shortenAddress, CONTRACT_CONFIG } from '../utils/contract';
 
@@ -108,10 +108,6 @@ export default function InvoicePrintModal({ invoice, onClose }) {
                 </span>
               </div>
               <div className="pt-0.5">
-                <span className="text-zinc-600">Tên đơn vị:</span>{' '}
-                <strong className="text-zinc-950">TẬP ĐOÀN CÔNG NGHỆ CHUỖI KHỐI ĐỀ TÀI 4</strong>
-              </div>
-              <div>
                 <span className="text-zinc-600">Mã số thuế:</span>{' '}
                 <strong className="font-mono text-zinc-950">0318992026</strong>
               </div>
@@ -130,10 +126,6 @@ export default function InvoicePrintModal({ invoice, onClose }) {
                 Đơn vị mua hàng (Buyer)
               </div>
               <div className="pt-0.5">
-                <span className="text-zinc-600">Tên đơn vị:</span>{' '}
-                <strong className="text-zinc-950">CÔNG TY TNHH ĐỐI TÁC THƯƠNG MẠI VIỆT NAM</strong>
-              </div>
-              <div>
                 <span className="text-zinc-600">Mã số thuế:</span>{' '}
                 <strong className="font-mono text-zinc-950">0109988776</strong>
               </div>
@@ -230,9 +222,15 @@ export default function InvoicePrintModal({ invoice, onClose }) {
               </div>
               <div>
                 <span className="text-zinc-600 block">Địa chỉ Smart Contract Cục Thuế:</span>
-                <p className="font-mono text-zinc-900 break-all select-all pt-0.5">
-                  {CONTRACT_CONFIG.address}
-                </p>
+                <a
+                  href={`${CONTRACT_CONFIG.blockExplorerUrl}/address/${CONTRACT_CONFIG.address}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-zinc-900 hover:text-zinc-950 underline inline-flex items-center gap-1 break-all select-all pt-0.5"
+                  title="Xem Smart Contract trên Etherscan Sepolia"
+                >
+                  {CONTRACT_CONFIG.address} <ExternalLink className="w-3 h-3 opacity-60 inline" />
+                </a>
               </div>
             </div>
           </div>
