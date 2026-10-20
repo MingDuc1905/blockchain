@@ -86,14 +86,17 @@ def run_simulation():
     print("      KỊCH BẢN KIỂM THỬ SMART CONTRACT HÓA ĐƠN ĐIỆN TỬ (ĐỀ TÀI 4)")
     print("      Môn: Blockchain và Ứng dụng • Khoa CNTT - HUFLIT")
     print("      Học viên kiểm thử: Nhóm Đề tài 4 • GVHD: TS. Trần Minh Thái")
+    print("      Mạng thực nghiệm: Ethereum Sepolia | Contract: 0xce2A4698BAcc6F108574B303cA5a633a5AF66B9C")
+    print("      Ví Doanh Nghiệp (Bên Bán): 0x87Fa1D5c91a10790944A395Ff6fdEabfa62b867A")
     print("=" * 80)
     print()
 
     contract = HoaDonDienTuSimulator()
 
-    # Danh sách các tài khoản ví mô phỏng (Ethereum Addresses)
-    VI_DOANH_NGHIEP_BAN = "0x71C8A185672d5464197e7D1e72D1e411bA67C418" # Công ty TNHH Phát Triển Công Nghệ ABC
-    VI_KHACH_HANG_1     = "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db" # Siêu thị Điện máy XYZ
+    # Địa chỉ Smart Contract và Tài khoản ví thực tế trên mạng Ethereum Sepolia
+    DIA_CHI_CONTRACT    = "0xce2A4698BAcc6F108574B303cA5a633a5AF66B9C"
+    VI_DOANH_NGHIEP_BAN = "0x87Fa1D5c91a10790944A395Ff6fdEabfa62b867A" # Ví Doanh nghiệp phát hành hóa đơn (Sepolia)
+    VI_KHACH_HANG_1     = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" # Đối tác Thương mại Khách hàng 1
     VI_KHACH_HANG_2     = "0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB" # Tập đoàn Xây dựng An Phát
     VI_KHACH_HANG_3     = "0x617F2E2fD72FD9D5503197092aC168c91465E7f2" # Công ty Cổ phần Thương mại Alpha
 
