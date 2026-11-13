@@ -3,7 +3,7 @@
 
 ---
 
-## 🎯 Giới Thiệu Đề Tài
+##  Giới Thiệu Đề Tài
 Đề tài nghiên cứu và ứng dụng công nghệ **Hợp đồng thông minh (Smart Contract)** trên nền tảng **Ethereum Virtual Machine (EVM)** nhằm giải quyết triệt để vấn nạn gian lận hóa đơn GTGT, mua bán hóa đơn khống của các doanh nghiệp "ma" và kê khai trùng lặp hóa đơn tại nhiều chi cục thuế.
 
 ### Các Tính Năng Nổi Bật:
@@ -31,7 +31,7 @@ d:\block chain\
 
 ---
 
-## 🚀 Hướng Dẫn Chạy Kiểm Thử Mô Phỏng (Local Demo)
+##  Hướng Dẫn Chạy Kiểm Thử Mô Phỏng (Local Demo)
 Mở Terminal tại thư mục `d:\block chain\` và chạy lệnh:
 ```bash
 python scripts/demo_hoadon.py
