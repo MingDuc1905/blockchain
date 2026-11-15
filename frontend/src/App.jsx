@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import { Web3Provider, useWeb3 } from './context/Web3Context';
+import { CONTRACT_CONFIG } from './utils/contract';
 import AppSidebar from './components/AppSidebar';
 import SiteHeader from './components/SiteHeader';
 import SectionCards from './components/SectionCards';
@@ -27,12 +29,43 @@ function DashboardApp() {
     try {
       fetchBlockNumber();
       const list = await readContract.layDanhSachMaHoaDon();
+
+      // Truy vấn event logs HoaDonPhatHanh on-chain để lấy đúng Tx Hash thật
+      const eventTxMap = {};
+      try {
+        const filter = readContract.filters.HoaDonPhatHanh();
+        let events = [];
+        try {
+          events = await readContract.queryFilter(filter, 11940000, 'latest');
+        } catch (filterErr) {
+          console.warn("queryFilter 11940000-latest gặp lỗi giới hạn block range, chuyển sang fallback RPC:", filterErr);
+          try {
+            const fallbackProvider = new ethers.JsonRpcProvider('https://sepolia.gateway.tenderly.co');
+            const fallbackContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, fallbackProvider);
+            events = await fallbackContract.queryFilter(filter, 11940000, 'latest');
+          } catch (fbErr) {
+            console.warn("Fallback RPC cũng gặp lỗi:", fbErr);
+          }
+        }
+
+        events.forEach(e => {
+          if (e.args) {
+            const key = `${e.args.giaTri.toString()}_${e.args.thoiGianPhatHanh.toString()}`;
+            eventTxMap[key] = e.transactionHash;
+          }
+        });
+      } catch (errEvents) {
+        console.warn("Lỗi đọc event log HoaDonPhatHanh:", errEvents);
+      }
+
       const loaded = [];
       for (let i = list.length - 1; i >= 0; i--) {
         const code = list[i];
         try {
           const hd = await readContract.traCuuHoaDon(code);
           const [maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian] = hd;
+          const key = `${giaTri.toString()}_${thoiGian.toString()}`;
+          const eventTx = eventTxMap[key];
           const storedTx = localStorage.getItem('tx_' + code);
           loaded.push({
             index: i + 1,
@@ -41,7 +74,7 @@ function DashboardApp() {
             nguoiMua,
             giaTri: Number(giaTri),
             thoiGian: Number(thoiGian),
-            txHash: storedTx || null
+            txHash: eventTx || storedTx || null
           });
         } catch (e) {
           console.warn(`Lỗi đọc ${code}:`, e);
