@@ -32,6 +32,10 @@ d:\block chain\
 ---
 
 ##  Hướng Dẫn Chạy Kiểm Thử Mô Phỏng (Local Demo)
+
+Để gửi giao dịch **thật** lên Sepolia bằng Python/Web3.py (phát hành mới, đối soát và
+gửi trùng mã để nhận receipt thất bại thật), xem [hướng dẫn giao dịch Sepolia](docs/CHAY_GIAO_DICH_SEPOLIA.md).
+Script `demo_hoadon.py` bên dưới chỉ mô phỏng trong bộ nhớ, không gửi giao dịch mạng.
 Mở Terminal tại thư mục `d:\block chain\` và chạy lệnh:
 ```bash
 python scripts/demo_hoadon.py
