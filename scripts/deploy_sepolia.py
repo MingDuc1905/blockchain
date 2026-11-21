@@ -19,12 +19,14 @@ Cách 1: Triển khai nhanh chóng qua Remix IDE (Khuyên dùng cho sinh viên):
 1. Truy cập https://remix.ethereum.org/
 2. Tạo file mới: `contracts/HoaDonDienTu.sol` và dán toàn bộ code từ file contracts/HoaDonDienTu.sol
 3. Vào tab 'Solidity Compiler':
-   - Chọn Compiler version: 0.8.20 trở lên
+   - Chọn Compiler version: 0.8.20 (đúng phiên bản trong pragma)
+   - Advanced Configurations: bật Enable optimization = 200, EVM Version = shanghai
    - Bấm 'Compile HoaDonDienTu.sol' (Đảm bảo xuất hiện dấu tích xanh)
 4. Vào tab 'Deploy & Run Transactions':
    - Environment: Chọn 'Injected Provider - MetaMask'
    - Đảm bảo MetaMask trên trình duyệt đang kết nối mạng 'Sepolia Testnet' (có sẵn một lượng nhỏ Sepolia ETH miễn phí từ faucet)
    - Chọn Contract: `HoaDonDienTu`
+   - Dán địa chỉ ví Trọng tài (Arbiter) vào ô `_ARBITER` cạnh nút Deploy (constructor của phiên bản 2)
    - Bấm nút 'Deploy' màu cam
    - Xác nhận giao dịch trên ví MetaMask
 5. Sau khi Deploy thành công:
@@ -32,13 +34,16 @@ Cách 1: Triển khai nhanh chóng qua Remix IDE (Khuyên dùng cho sinh viên):
    - Mở Etherscan Sepolia: https://sepolia.etherscan.io/address/<CONTRACT_ADDRESS>
    - Chụp ảnh màn hình mục 'Contract Creation' và 'Transaction Details' để dán vào file Báo cáo Word và Slide PowerPoint.
 
-Cách 2: Triển khai tự động bằng Python Web3 (dành cho môi trường Terminal):
---------------------------------------------------------------------------
-Yêu cầu:
-- Cài đặt: pip install web3 py-solc-x
-- Cấu hình file .env hoặc biến môi trường:
-  + SEPOLIA_RPC_URL="https://rpc.sepolia.org" (hoặc từ Infura / Alchemy)
-  + PRIVATE_KEY="0x..." (Private key của ví testnet, tuyệt đối không dùng ví chứa tài sản thật)
+Cách 2: Triển khai + verify tự động bằng Hardhat (khuyên dùng):
+--------------------------------------------------------------
+  npm install
+  copy .env.example .env      # điền PRIVATE_KEY (ví testnet), ARBITER_ADDRESS, ETHERSCAN_API_KEY
+  npm test                    # kiểm thử vòng đời hóa đơn + Arbiter
+  npm run deploy:sepolia      # deploy, ghi deployments/sepolia.json
+  npm run check:bytecode      # giải mã metadata để xác nhận compiler thật + so sánh bytecode
+  npm run verify:sepolia      # verify source trên Etherscan (0.8.20, optimizer 200 runs, shanghai)
+  node scripts/sync_config.js # cập nhật ABI + địa chỉ vào frontend/ và app/
+Chi tiết: docs/HUONG_DAN_DEPLOY_SEPOLIA.md
 
 Thông tin giao dịch ghi nhận tham chiếu:
 - Network: Ethereum Sepolia Testnet

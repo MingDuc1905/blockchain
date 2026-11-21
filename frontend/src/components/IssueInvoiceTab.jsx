@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
+import { friendlyError } from '../utils/invoiceStatus';
 import { readVietnameseCurrency, formatVND, computeInvoiceHash } from '../utils/taxHelper';
 import { 
   Send, CheckCircle2, AlertCircle, Loader2, 
@@ -138,6 +139,11 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
       return;
     }
 
+    if (nguoiMua.trim().toLowerCase() === account.toLowerCase()) {
+      showToast('Địa Chỉ Sai', 'Ví người mua không được trùng ví người bán (ví đang kết nối)!', 'danger');
+      return;
+    }
+
     if (finalTotal <= 0) {
       showToast('Giá Trị Sai', 'Tổng tiền hóa đơn phải lớn hơn 0!', 'danger');
       return;
@@ -188,7 +194,7 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
         items
       });
 
-      showToast('Thành Công', `Hóa đơn ${maHD.trim()} đã được ghi nhận vĩnh viễn vào Block #${receipt.blockNumber}!`, 'success');
+      showToast('Thành Công', `Hóa đơn ${maHD.trim()} đã ghi nhận vào Block #${receipt.blockNumber} ở trạng thái Chờ xác nhận. Người mua cần xác nhận hoặc từ chối.`, 'success');
       refreshBalance();
 
       if (onInvoiceIssued) {
@@ -201,6 +207,8 @@ export default function IssueInvoiceTab({ onInvoiceIssued }) {
       if (msg.includes('Loi: Ma hoa don da ton tai tren he thong!')) {
         msg = 'Hợp đồng từ chối: Mã hóa đơn này đã tồn tại trên sổ cái blockchain!';
         setIsDuplicate(true);
+      } else if (!msg.startsWith('Mã hóa đơn')) {
+        msg = friendlyError(err);
       }
       setErrorMsg(msg);
       showToast('Thất Bại', msg, 'danger');

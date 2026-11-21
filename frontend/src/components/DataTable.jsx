@@ -4,10 +4,13 @@ import { CONTRACT_CONFIG, shortenAddress } from '../utils/contract';
 import { formatVND } from '../utils/taxHelper';
 import { Search, RefreshCw, Copy, Printer, ExternalLink } from './Icons';
 import InvoicePrintModal from './InvoicePrintModal';
+import StatusBadge from './StatusBadge';
+import { TRANG_THAI_INFO } from '../utils/invoiceStatus';
 
 export default function DataTable({ invoices, loading, onRefresh, onSelectInvoice }) {
   const { showToast } = useWeb3();
   const [filterQuery, setFilterQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [selectedInvoiceForPrint, setSelectedInvoiceForPrint] = useState(null);
 
   const handleCopy = (text, label) => {
@@ -15,11 +18,15 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
     showToast('Đã Sao Chép', `${label} đã được lưu vào clipboard!`, 'info');
   };
 
-  const filtered = invoices.filter(item => 
-    item.maHoaDon.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    item.nguoiBan.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    item.nguoiMua.toLowerCase().includes(filterQuery.toLowerCase())
-  );
+  const filtered = invoices.filter(item => {
+    const q = filterQuery.toLowerCase();
+    const khopTuKhoa =
+      item.maHoaDon.toLowerCase().includes(q) ||
+      item.nguoiBan.toLowerCase().includes(q) ||
+      item.nguoiMua.toLowerCase().includes(q);
+    const khopTrangThai = filterStatus === 'all' || String(item.trangThai) === filterStatus;
+    return khopTuKhoa && khopTrangThai;
+  });
 
   return (
     <div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
@@ -56,6 +63,17 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
             className="w-full h-8 pl-9 pr-3 text-xs font-mono border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-950 bg-white text-zinc-900"
           />
         </div>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="h-8 px-2 text-xs border border-zinc-300 rounded-md bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+          aria-label="Lọc theo trạng thái"
+        >
+          <option value="all">Tất cả trạng thái</option>
+          {Object.entries(TRANG_THAI_INFO).map(([k, v]) => (
+            <option key={k} value={k}>{v.label}</option>
+          ))}
+        </select>
         <span className="text-xs text-zinc-700 font-mono">
           {loading ? 'Đang đồng bộ...' : `Hiển thị ${filtered.length} / ${invoices.length} hóa đơn`}
         </span>
@@ -68,6 +86,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
             <tr>
               <th className="py-3 px-4 w-12 text-center">STT</th>
               <th className="py-3 px-4">Mã hóa đơn</th>
+              <th className="py-3 px-4">Trạng thái</th>
               <th className="py-3 px-4">Đơn vị bán (msg.sender)</th>
               <th className="py-3 px-4">Đơn vị mua (khách hàng)</th>
               <th className="py-3 px-4 text-right">Tổng tiền thanh toán</th>
@@ -81,6 +100,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                 <tr key={n} className="animate-pulse">
                   <td className="py-4 px-4 text-center"><div className="h-4 w-6 bg-zinc-200 rounded mx-auto" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-28 bg-zinc-200 rounded" /></td>
+                  <td className="py-4 px-4"><div className="h-5 w-20 bg-zinc-200 rounded-full" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-32 bg-zinc-200 rounded" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-32 bg-zinc-200 rounded" /></td>
                   <td className="py-4 px-4"><div className="h-4 w-24 bg-zinc-200 rounded ml-auto" /></td>
@@ -90,7 +110,7 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan="7" className="py-10 text-center text-zinc-500">
+                <td colSpan="8" className="py-10 text-center text-zinc-500">
                   Không tìm thấy hóa đơn nào khớp với từ khóa tìm kiếm.
                 </td>
               </tr>
@@ -126,6 +146,9 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                       </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <StatusBadge trangThai={item.trangThai} />
                     </td>
                     <td className="py-3.5 px-4 font-mono">
                       <a 
@@ -170,9 +193,9 @@ export default function DataTable({ invoices, loading, onRefresh, onSelectInvoic
                         <button 
                           onClick={() => onSelectInvoice(item.maHoaDon)}
                           className="h-7 px-2 text-xs font-medium border border-zinc-300 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-white text-zinc-800"
-                          title="Xem đối soát chi tiết"
+                          title="Xem chi tiết, xác nhận / từ chối / hủy / khiếu nại"
                         >
-                          Đối Soát
+                          Chi Tiết
                         </button>
                         <button 
                           onClick={() => setSelectedInvoiceForPrint(item)}

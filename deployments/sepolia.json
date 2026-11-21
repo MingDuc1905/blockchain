@@ -1,0 +1,21 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "contract": "HoaDonDienTu",
+  "address": "0x3aDc03271FeAb484c84598874aB08DeEec89dEF4",
+  "deployer": "0xD6B34Fc801a7Cd7ebe4CB20Cc7d3550DCB21553F",
+  "arbiter": "0x91cefCa1e311260fA8aBfC13257572b75b538387",
+  "txHash": "0x5bbec9ed523ad88fce56a7feb0f52d3e4ec21f227079486178a6166639792545",
+  "blockNumber": 12179409,
+  "compiler": "0.8.20",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "evmVersion": "shanghai",
+  "constructorArguments": [
+    "0x91cefCa1e311260fA8aBfC13257572b75b538387"
+  ],
+  "constructorArgumentsAbiEncoded": "00000000000000000000000091cefca1e311260fa8abfc13257572b75b538387",
+  "deployedAt": "2026-11-21T03:47:38.133Z"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "hoadon-dientu-contracts",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Hợp đồng HoaDonDienTu (Đề tài 4) - Hardhat: biên dịch, kiểm thử, deploy và verify trên Sepolia",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "verify:sepolia": "hardhat run scripts/verify.js --network sepolia",
+    "check:bytecode": "hardhat run scripts/check_bytecode.js --network sepolia"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.26.0",
+    "solc": "0.8.20"
+  }
+}
