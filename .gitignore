@@ -34,3 +34,8 @@ slides/**
 
 # Agent rules
 AGENTS.md
+
+# Local signing secrets and transaction evidence
+.env
+.env.*
+artifacts/sepolia/
