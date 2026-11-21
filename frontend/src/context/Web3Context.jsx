@@ -13,6 +13,7 @@ export function Web3Provider({ children }) {
   const [writeContract, setWriteContract] = useState(null);
   const [toast, setToast] = useState(null);
   const [latestBlock, setLatestBlock] = useState(null);
+  const [arbiter, setArbiter] = useState(null);
 
   const fetchBlockNumber = async () => {
     try {
@@ -31,6 +32,8 @@ export function Web3Provider({ children }) {
       const contract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, publicProvider);
       setReadContract(contract);
       fetchBlockNumber();
+      // Địa chỉ Trọng tài (Arbiter) để giao diện biết ví nào được phán quyết tranh chấp
+      contract.arbiter().then(setArbiter).catch((e) => console.warn('Không đọc được Arbiter:', e));
     } catch (err) {
       console.warn("Không kết nối được Public RPC:", err);
     }
@@ -141,6 +144,7 @@ export function Web3Provider({ children }) {
       readContract,
       writeContract,
       latestBlock,
+      arbiter,
       fetchBlockNumber,
       connectWallet,
       disconnectWallet,

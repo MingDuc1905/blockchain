@@ -34,3 +34,11 @@ slides/**
 
 # Agent rules
 AGENTS.md
+
+# Hardhat / Node
+node_modules/
+artifacts/
+cache/
+.env
+deployments/hardhat.json
+deployments/localhost.json

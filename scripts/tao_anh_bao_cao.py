@@ -28,7 +28,7 @@ IMAGES_DIR = os.path.normpath(os.path.join(BASE_DIR, '..', 'docs', 'images'))
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 # Thông số chuẩn của dự án on-chain
-CONTRACT_ADDR = "0xce2A4698BAcc6F108574B303cA5a633a5AF66B9C"
+CONTRACT_ADDR = "0x3aDc03271FeAb484c84598874aB08DeEec89dEF4"
 SELLER_WALLET = "0x87Fa1D5c91a10790944A395Ff6fdEabfa62b867A"
 BUYER_WALLET_1 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 

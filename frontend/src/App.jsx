@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Web3Provider, useWeb3 } from './context/Web3Context';
 import { CONTRACT_CONFIG } from './utils/contract';
+import { TRANG_THAI, parseInvoiceResult } from './utils/invoiceStatus';
 import AppSidebar from './components/AppSidebar';
 import SiteHeader from './components/SiteHeader';
 import SectionCards from './components/SectionCards';
@@ -36,13 +37,13 @@ function DashboardApp() {
         const filter = readContract.filters.HoaDonPhatHanh();
         let events = [];
         try {
-          events = await readContract.queryFilter(filter, 11940000, 'latest');
+          events = await readContract.queryFilter(filter, CONTRACT_CONFIG.deployBlock || 11940000, 'latest');
         } catch (filterErr) {
-          console.warn("queryFilter 11940000-latest gặp lỗi giới hạn block range, chuyển sang fallback RPC:", filterErr);
+          console.warn("queryFilter từ block triển khai gặp lỗi giới hạn block range, chuyển sang fallback RPC:", filterErr);
           try {
             const fallbackProvider = new ethers.JsonRpcProvider('https://sepolia.gateway.tenderly.co');
             const fallbackContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, fallbackProvider);
-            events = await fallbackContract.queryFilter(filter, 11940000, 'latest');
+            events = await fallbackContract.queryFilter(filter, CONTRACT_CONFIG.deployBlock || 11940000, 'latest');
           } catch (fbErr) {
             console.warn("Fallback RPC cũng gặp lỗi:", fbErr);
           }
@@ -63,7 +64,8 @@ function DashboardApp() {
         const code = list[i];
         try {
           const hd = await readContract.traCuuHoaDon(code);
-          const [maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian] = hd;
+          const parsed = parseInvoiceResult(hd);
+          const { maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian, trangThai, ghiChu } = parsed;
           const key = `${giaTri.toString()}_${thoiGian.toString()}`;
           const eventTx = eventTxMap[key];
           const storedTx = localStorage.getItem('tx_' + code);
@@ -72,8 +74,10 @@ function DashboardApp() {
             maHoaDon,
             nguoiBan,
             nguoiMua,
-            giaTri: Number(giaTri),
-            thoiGian: Number(thoiGian),
+            giaTri,
+            thoiGian,
+            trangThai,
+            ghiChu,
             txHash: eventTx || storedTx || null
           });
         } catch (e) {
@@ -88,7 +92,10 @@ function DashboardApp() {
     }
   };
 
-  const totalRevenue = invoices.reduce((acc, cur) => acc + (cur.giaTri || 0), 0);
+  // Doanh thu on-chain chỉ tính các hóa đơn đã được người mua (hoặc Trọng tài) xác nhận
+  const totalRevenue = invoices
+    .filter((inv) => inv.trangThai === TRANG_THAI.CONFIRMED)
+    .reduce((acc, cur) => acc + (cur.giaTri || 0), 0);
 
   useEffect(() => {
     if (readContract) {
@@ -177,7 +184,7 @@ function DashboardApp() {
             )}
 
             {activeTab === 'lookup' && (
-              <LookupTab initialCode={lookupInitialCode} />
+              <LookupTab initialCode={lookupInitialCode} onInvoiceChanged={loadLedger} />
             )}
 
             {activeTab === 'ledger' && (

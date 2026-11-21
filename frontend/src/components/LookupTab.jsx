@@ -4,8 +4,11 @@ import { CONTRACT_CONFIG } from '../utils/contract';
 import { formatVND, readVietnameseCurrency } from '../utils/taxHelper';
 import { Search, ShieldCheck, AlertTriangle, Copy, Printer } from './Icons';
 import InvoicePrintModal from './InvoicePrintModal';
+import StatusBadge from './StatusBadge';
+import InvoiceActions from './InvoiceActions';
+import { TRANG_THAI, parseInvoiceResult, friendlyError } from '../utils/invoiceStatus';
 
-export default function LookupTab({ initialCode }) {
+export default function LookupTab({ initialCode, onInvoiceChanged }) {
   const { readContract, showToast } = useWeb3();
 
   const [maHD, setMaHD] = useState(initialCode || '');
@@ -15,7 +18,7 @@ export default function LookupTab({ initialCode }) {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const lastLookedUpCode = useRef('');
 
-  const executeLookup = useCallback(async (codeToSearch) => {
+  const executeLookup = useCallback(async (codeToSearch, silent = false) => {
     const code = (codeToSearch !== undefined ? codeToSearch : maHD).trim();
     if (!code) {
       showToast('Thông Báo', 'Vui lòng nhập Mã Số Hóa Đơn cần tra cứu!', 'warning');
@@ -24,7 +27,7 @@ export default function LookupTab({ initialCode }) {
 
     setLoading(true);
     setNotFound(false);
-    setInvoiceData(null);
+    if (!silent) setInvoiceData(null);
 
     try {
       if (!readContract) {
@@ -40,21 +43,18 @@ export default function LookupTab({ initialCode }) {
       }
 
       const res = await readContract.traCuuHoaDon(code);
-      const [maHoaDon, nguoiBan, nguoiMua, giaTri, thoiGian] = res;
+      const parsed = parseInvoiceResult(res);
+      const daTranhChap = await readContract.daTungTranhChap(code);
 
-      setInvoiceData({
-        maHoaDon,
-        nguoiBan,
-        nguoiMua,
-        giaTri: Number(giaTri),
-        thoiGian: Number(thoiGian)
-      });
+      setInvoiceData({ ...parsed, daTranhChap });
 
-      showToast('Xác Thực Hợp Lệ', `Đã tìm thấy hóa đơn [${code}] trên chuỗi khối!`, 'success');
+      if (!silent) {
+        showToast('Đã Tìm Thấy', `Hóa đơn [${code}] có trên chuỗi khối, trạng thái: ${parsed.trangThai === TRANG_THAI.CONFIRMED ? 'Đã xác nhận' : 'xem chi tiết bên dưới'}.`, 'success');
+      }
 
     } catch (err) {
       console.error('Lỗi tra cứu:', err);
-      showToast('Lỗi Tra Cứu', err.message, 'danger');
+      showToast('Lỗi Tra Cứu', friendlyError(err), 'danger');
     } finally {
       setLoading(false);
     }
@@ -71,6 +71,12 @@ export default function LookupTab({ initialCode }) {
   const handleLookup = (e) => {
     if (e) e.preventDefault();
     executeLookup(maHD);
+  };
+
+  // Sau khi đổi trạng thái: đọc lại hóa đơn (không báo toast) và đồng bộ sổ cái ở trang cha
+  const handleInvoiceChanged = async () => {
+    await executeLookup(invoiceData.maHoaDon, true);
+    if (onInvoiceChanged) onInvoiceChanged();
   };
 
   const handleCopy = (text, label) => {
@@ -180,12 +186,19 @@ export default function LookupTab({ initialCode }) {
               {/* Header Box */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-zinc-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs">
-                    ✓
+                  <div className={`w-6 h-6 rounded-full text-white flex items-center justify-center font-bold text-xs ${
+                    invoiceData.trangThai === TRANG_THAI.CONFIRMED ? 'bg-emerald-600'
+                    : invoiceData.trangThai === TRANG_THAI.REJECTED || invoiceData.trangThai === TRANG_THAI.CANCELLED ? 'bg-zinc-500'
+                    : 'bg-zinc-900'
+                  }`}>
+                    {invoiceData.trangThai === TRANG_THAI.CONFIRMED ? '✓'
+                      : invoiceData.trangThai === TRANG_THAI.REJECTED || invoiceData.trangThai === TRANG_THAI.CANCELLED ? '✕'
+                      : '…'}
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-zinc-950 font-mono">
-                      HÓA ĐƠN HỢP LỆ: #{invoiceData.maHoaDon}
+                    <h4 className="font-bold text-sm text-zinc-950 font-mono flex items-center gap-2 flex-wrap">
+                      <span>HÓA ĐƠN #{invoiceData.maHoaDon}</span>
+                      <StatusBadge trangThai={invoiceData.trangThai} />
                     </h4>
                     <p className="text-xs text-zinc-600 mt-0.5">
                       Ghi nhận vào chuỗi khối: {new Date(invoiceData.thoiGian * 1000).toLocaleString('vi-VN')}
@@ -262,6 +275,17 @@ export default function LookupTab({ initialCode }) {
                   {formatVND(invoiceData.giaTri)}
                 </div>
               </div>
+
+              {/* Lý do từ chối của người mua (nếu có) */}
+              {invoiceData.ghiChu && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-xs text-red-950">
+                  <strong className="block font-semibold text-red-900 mb-0.5">Lý do từ chối của bên mua:</strong>
+                  <span className="leading-relaxed break-words">{invoiceData.ghiChu}</span>
+                </div>
+              )}
+
+              {/* Thao tác theo vai trò: xác nhận / từ chối / hủy / khiếu nại / phán quyết */}
+              <InvoiceActions invoice={invoiceData} onChanged={handleInvoiceChanged} />
             </div>
           )}
         </div>
